@@ -1,5 +1,6 @@
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
+print("In program!")
 t5_qa_model = AutoModelForSeq2SeqLM.from_pretrained("google/t5-11b-ssm-tqa")
 t5_tok = AutoTokenizer.from_pretrained("google/t5-11b-ssm-tqa")
 
