@@ -35,6 +35,7 @@ class PerturbedQuestion:
         - top           : number of synonyms considered when smoothing (variable "K" in the paper)
         - alpha         : probability of not smoothing a word by its synonym (variable "alpha" in the paper)
         """
+
         new_question = self.question.split()
         for i, word in enumerate(new_question) :
             if random() > alpha:
@@ -48,6 +49,7 @@ class PerturbedQuestion:
         - top : number of synonyms to be generated for each word
         Returns : Dictionary indexed as <word, list of synonyms>
         """
+        
         global smoothing_model
         smoothing_dict = defaultdict(list)
         for i, word in enumerate(self.questionWords):
