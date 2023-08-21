@@ -18,6 +18,7 @@ def certify_radius(current_question : Question, nb_pert : int,  N : int, top : i
         writer = csv.writer(f)
         for j in range(nb_pert):
             prompt = current_question.generatePerturbedQuestion()
+            prompt.generate_synonyms(top)
             smooth_prompts = prompt.smoothN(N,top)
             for _, smooth_prompt in enumerate(smooth_prompts):
                 start = timeit.timeit()
@@ -29,7 +30,7 @@ def certify_radius(current_question : Question, nb_pert : int,  N : int, top : i
                 writer.writerow([current_question.id_num, smooth_prompt, radius, smooth_answer])
         f.close()
 
-if __name__ == "__main__()":
+if __name__ == "__main__":
     ### Argparse these things ###
     perturbations_per_radius = 10
     alpha = 0.85
