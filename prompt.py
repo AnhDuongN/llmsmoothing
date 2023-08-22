@@ -2,14 +2,27 @@
 import logging
 import timeit
 import csv
+import argparse
+import tqdm
 from question import Question
 
 from transformers import AutoTokenizer, pipeline, AutoModelForSeq2SeqLM
 from datasets import load_dataset
 
-logging.basicConfig(level=logging.DEBUG)
 
-def certify_radius(current_question : Question, nb_pert : int,  N : int, top : int, radius : int):
+def create_arg_parse() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--perturbations_per_radius", help="number of perturbations to be certified per radius",type=int, default=10)
+    parser.add_argument("-a", "--alpha", help="alpha",type=float, default=0.85)
+    parser.add_argument("-m", "--num_lines", help="number of original questions to be taken from dataset",type=int, default = 10)
+    parser.add_argument("-r", "--max_radius", help="maximum radius to be certified",type=int, default=5)
+    parser.add_argument("-N", "--smoothing_number", help="number of perturbations to be certified per radius",type=int, default=50)
+    parser.add_argument("-t", "--top", help="number of synonyms to be considered for smoothing",type=int, default=10)
+    parser.add_argument("-o", "--output", help="output file name", default="output.csv")
+    parser.add_argument("-v", "--verbose", action="count", default=0)
+
+    
+def certify_radius(current_question : Question, nb_pert : int,  N : int, top : int, radius : int, filename : str = "output.csv"):
     """
     For each radius :  
     * Generates <nb_pert> perturbed questions
@@ -22,15 +35,17 @@ def certify_radius(current_question : Question, nb_pert : int,  N : int, top : i
     - N                : Number of smoothed questions to be generated for each perturbed question
     - top              : number of synonyms considered when smoothing (variable "K" in the paper)
     - radius           : number of perturbations
+    - filename         : output file name
     """
     global t5_tok, t5_qa_model
-    with open("output.csv", "a") as f:
+    with open(filename, "a") as f:
         writer = csv.writer(f)
-        for j in range(nb_pert):
+        for j in tqdm.tqdm(range(nb_pert), desc=f"Perturbed question {j}"):
             prompt = current_question.generatePerturbedQuestion()
+            logging.debug(f"Perturbed question : {prompt}")
             prompt.generate_synonyms(top)
             smooth_prompts = prompt.smoothN(N,top)
-            for _, smooth_prompt in enumerate(smooth_prompts):
+            for k, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts), desc=f"Smooth iterate {k}"):
                 
                 if logging.getLogger.isEnabledFor(logging.INFO): 
                     start = timeit.timeit()
@@ -47,40 +62,60 @@ def certify_radius(current_question : Question, nb_pert : int,  N : int, top : i
         f.close()
 
 if __name__ == "__main__":
-    ### Argparse these things ###
-    perturbations_per_radius = 10
-    alpha = 0.85
-    num_lines = 1
-    max_radius = 5
-    N = 10
-    top = 5
-    # Argparse file name
+    parser = create_arg_parse()
+    args = parser.parse_args()
 
-    ### Load Q/A model and vocab ###
-    t5_qa_model = AutoModelForSeq2SeqLM.from_pretrained("google/t5-11b-ssm-tqa")
-    t5_tok = AutoTokenizer.from_pretrained("google/t5-11b-ssm-tqa")
-    logging.debug("Loaded t5 model")
+    perturbations_per_radius = args.perturbations_per_radius
+    alpha = args.alpha
 
-    vocab = t5_tok.get_vocab()
-    vocab_size = t5_tok.vocab_size
+    max_radius = args.max_radius
+    N = args.smoothing_number
+    top = args.top
+    filename = args.output
 
-    ### Load questions and answers
-    dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
-    logging.debug("Loaded dataset")
+    if not args.verbose:
+        logging.basicConfig(level=logging.ERROR)
+    elif args.verbose == 1:
+        logging.basicConfig(level=logging.WARNING)
+    elif args.verbose == 2:
+        logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.DEBUG)
 
-    ### Load smoothing model
-    smoothing_model = pipeline('fill-mask', model='albert-base-v2')
+    logging.debug(f"PPR : {perturbations_per_radius}, alpha : {alpha}, max_radius : {max_radius}, N : {N}, top : {top}, filename : {filename}")
+    # ### Load Q/A model and vocab ###
+    # t5_qa_model = AutoModelForSeq2SeqLM.from_pretrained("google/t5-11b-ssm-tqa")
+    # t5_tok = AutoTokenizer.from_pretrained("google/t5-11b-ssm-tqa")
+    # logging.debug("Loaded t5 model")
 
-    ### Create csv file
-    with open("output.csv", "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(["question_id", "perturbed_question", "radius", "answer"])
-        f.close()
+    # vocab = t5_tok.get_vocab()
+    # vocab_size = t5_tok.vocab_size
+
+    # ### Load questions and answers
+    # dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
+    # logging.debug("Loaded dataset")
+
+    # ### Load smoothing model
+    # smoothing_model = pipeline('fill-mask', model='albert-base-v2')
+
+    # ### Create csv file
+    # with open(filename, "w") as f:
+    #     writer = csv.writer(f)
+    #     writer.writerow(["question_id", "perturbed_question", "radius", "answer"])
+    #     f.close()
     
-    ### Prompt
-    for i, row in enumerate(dataset):
-        current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'], vocab_size, vocab)
-        for j in range(1, max_radius):
-            certify_radius(perturbations_per_radius, N, top, j)
+    # ### Prompt
+    # if args.num_lines : 
+    #     num_lines = args.num_lines
+    # else:
+    #     num_lines = len(dataset)
+
+    # for i, row in enumerate(dataset):
+    #     if (i >=num_lines):
+    #         break
+    #     logging.debug(f"Current question : {row['question']}")
+    #     current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'], vocab_size, vocab)
+    #     for j in range(1, max_radius):
+    #         certify_radius(perturbations_per_radius, N, top, j)
     
 

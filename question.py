@@ -11,8 +11,7 @@ class Question:
         self.answer = answer
         self.id_num = id_num
         self.perturbations = defaultdict(list)
-        self.vocab_size = vocab_size
-        self.vocab = vocab
+        self.vocab = list(vocab.keys())
 
     def __str__(self) -> str:
         return f"{self.id_num} \t {self.question} \t {self.answer}"
@@ -51,7 +50,7 @@ class Question:
         turns = 0
         while True: 
             if turns == max_turns:
-                logging.debug(f"Generation of perturbations exceded {max_turns} rolls")
+                logging.info(f"Generation of perturbations exceded {max_turns} rolls")
                 return [], []
             perturbedIndex = sample(range(0, self.length), radius)
             replaceIndex = [None]*radius
