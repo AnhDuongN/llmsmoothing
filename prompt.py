@@ -11,17 +11,16 @@ from datasets import load_dataset
 
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--perturbations_per_radius", help="number of perturbations to be certified per radius",type=int, default=10)
-    parser.add_argument("-a", "--alpha", help="alpha",type=float, default=0.85)
+    parser.add_argument("-a", "--alpha", help="alpha",type=float, default=0.75)
     parser.add_argument("-m", "--num_lines", help="number of original questions to be taken from dataset",type=int, default = 10)
     parser.add_argument("-r", "--max_radius", help="maximum radius to be certified",type=int, default=5)
-    parser.add_argument("-N", "--smoothing_number", help="number of perturbations to be certified per radius",type=int, default=50)
+    parser.add_argument("-N", "--smoothing_number", help="number of perturbations to be certified per radius",type=int, default=100)
     parser.add_argument("-t", "--top", help="number of synonyms to be considered for smoothing",type=int, default=10)
     parser.add_argument("-o", "--output", help="output file name", default="output.csv")
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
     
-def certify_radius(current_question : Question, nb_pert : int,  N : int, top : int, radius : int, alpha : float, filename : str):
+def certify_radius(current_question : Question,  N : int, top : int, radius : int, filename : str):
     """
     For each radius :  
     * Generates <nb_pert> perturbed questions
@@ -39,34 +38,29 @@ def certify_radius(current_question : Question, nb_pert : int,  N : int, top : i
     """
     with open(filename, "a") as f:
         writer = csv.writer(f)
-        for j in tqdm.tqdm(range(nb_pert), desc=f"Generating perturbed questions"):
-            prompt = current_question.generatePerturbedQuestion(radius)
-            logging.debug(f"Perturbed question : {prompt}")
-            prompt.generate_synonyms(top)
-            smooth_prompts = prompt.smoothN(N, top, alpha)
-            for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts), desc=f"Smooth iterates for perturbed question {j}"):
-                
-                if logging.getLogger().isEnabledFor(logging.INFO): 
-                    start = timeit.timeit()
-                
-                input_ids = config.t5_tok(smooth_prompt, return_tensors="pt").input_ids
-                gen_output = config.t5_qa_model.generate(input_ids)[0]
-                smooth_answer = config.t5_tok.decode(gen_output, skip_special_tokens=True)
-                
-                if logging.getLogger().isEnabledFor(logging.INFO): 
-                    end = timeit.timeit()
-                    logging.info(f"Inference time : {end-start}")
+        current_question.generate_synonyms_albert(top)
+        smooth_prompts = current_question.smoothN(N, top)
+        for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts)):
+            
+            if logging.getLogger.isEnabledFor(logging.INFO): 
+                start = timeit.timeit()
+            
+            input_ids = config.t5_tok(smooth_prompt, return_tensors="pt").input_ids
+            gen_output = config.t5_qa_model.generate(input_ids)[0]
+            smooth_answer = config.t5_tok.decode(gen_output, skip_special_tokens=True)
+            
+            if logging.getLogger.isEnabledFor(logging.INFO): 
+                end = timeit.timeit()
+                logging.info(f"Inference time : {end-start}")
 
-                writer.writerow([current_question.id_num, smooth_prompt, radius, smooth_answer])
+            writer.writerow([current_question.id_num, smooth_prompt, radius, smooth_answer])
         f.close()
 
 if __name__ == "__main__":
     parser = create_arg_parse()
     args = parser.parse_args()
 
-    perturbations_per_radius = args.perturbations_per_radius
     alpha = args.alpha
-
     max_radius = args.max_radius
     N = args.smoothing_number
     top = args.top
@@ -80,19 +74,17 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO)
     else:
         logging.basicConfig(level=logging.DEBUG)
-
-    logging.debug(f"PPR : {perturbations_per_radius}, alpha : {alpha}, max_radius : {max_radius}, N : {N}, top : {top}, filename : {filename}")
+    logging.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top : {top}, filename : {filename}")
     
-
     ### Load questions and answers
+    logging.debug("Loading dataset")
     dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
     logging.debug("Loaded dataset")
-
 
     ### Create csv file
     with open(filename, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["question_id", "perturbed_question", "radius", "answer"])
+        writer.writerow(["question_id", "question", "radius", "answer"])
         f.close()
     
     ### Prompt
@@ -106,8 +98,10 @@ if __name__ == "__main__":
         if (i >=num_lines):
             break
         logging.debug(f"Current question : {row['question']}")
+        #Should be deleted after
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
+        writer.writerow([row['question_id'], row['question'], 0, row['answer']])
         for j in range(1, max_radius):
-            certify_radius(current_question, perturbations_per_radius, N, top, j, alpha, filename)
+            certify_radius(current_question, N, top, j, filename)
     
 
