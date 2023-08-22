@@ -53,7 +53,7 @@ class PerturbedQuestion:
         global smoothing_model
         smoothing_dict = defaultdict(list)
         for i, word in enumerate(self.questionWords):
-            if i == len(self.questionWords -1):
+            if i == len(self.questionWords) -1:
                 masked_question = ' '.join(self.questionWords[:-1])+"[MASK]?"
             else:
                 masked_question = ' '.join(self.questionWords[:i]) + "[MASK]" + ' '.join(self.questionWords[i+1:])

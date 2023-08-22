@@ -12,11 +12,12 @@ class Question:
         self.id_num = id_num
         self.perturbations = defaultdict(list)
         self.vocab = list(vocab.keys())
+        self.vocab_size = vocab_size
 
     def __str__(self) -> str:
         return f"{self.id_num} \t {self.question} \t {self.answer}"
     
-    def generatePerturbedQuestion(self, radius : int, max_turns : int) -> str:
+    def generatePerturbedQuestion(self, radius : int, max_turns : int = 10) -> str:
         """
         From a question, generates a perturbed questions with <radius> word substitutions
         Parameters : 
@@ -32,7 +33,7 @@ class Question:
         for i, (index, replacement) in enumerate(zip(indices, replacements)):
             words_list[index] = self.vocab[replacement]
 
-        return PerturbedQuestion(' '.join(words_list).replace("?", "")+'?', self.id_num)
+        return PerturbedQuestion(' '.join(words_list).replace("?", "").replace("_","")+'?', self.id_num)
     
     def generateSample(self, radius : int, max_turns : int):
         """

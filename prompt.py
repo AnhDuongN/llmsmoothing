@@ -40,12 +40,12 @@ def certify_radius(current_question : Question, nb_pert : int,  N : int, top : i
     global t5_tok, t5_qa_model
     with open(filename, "a") as f:
         writer = csv.writer(f)
-        for j in tqdm.tqdm(range(nb_pert), desc=f"Perturbed question {j}"):
-            prompt = current_question.generatePerturbedQuestion()
+        for j in tqdm.tqdm(range(nb_pert), desc=f"Generating perturbed questions"):
+            prompt = current_question.generatePerturbedQuestion(radius)
             logging.debug(f"Perturbed question : {prompt}")
             prompt.generate_synonyms(top)
             smooth_prompts = prompt.smoothN(N,top)
-            for k, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts), desc=f"Smooth iterate {k}"):
+            for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts), desc=f"Smooth iterates for perturbed question {j}"):
                 
                 if logging.getLogger.isEnabledFor(logging.INFO): 
                     start = timeit.timeit()
