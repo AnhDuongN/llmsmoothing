@@ -21,7 +21,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
     
-def certify_radius(current_question : Question, nb_pert : int,  N : int, top : int, radius : int, filename : str):
+def certify_radius(current_question : Question, nb_pert : int,  N : int, top : int, radius : int, alpha : float, filename : str):
     """
     For each radius :  
     * Generates <nb_pert> perturbed questions
@@ -34,6 +34,7 @@ def certify_radius(current_question : Question, nb_pert : int,  N : int, top : i
     - N                : Number of smoothed questions to be generated for each perturbed question
     - top              : number of synonyms considered when smoothing (variable "K" in the paper)
     - radius           : number of perturbations
+    - alpha            : Probability of not changing the original word when smoothing
     - filename         : output file name
     """
     with open(filename, "a") as f:
@@ -42,17 +43,17 @@ def certify_radius(current_question : Question, nb_pert : int,  N : int, top : i
             prompt = current_question.generatePerturbedQuestion(radius)
             logging.debug(f"Perturbed question : {prompt}")
             prompt.generate_synonyms(top)
-            smooth_prompts = prompt.smoothN(N,top)
+            smooth_prompts = prompt.smoothN(N, top, alpha)
             for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts), desc=f"Smooth iterates for perturbed question {j}"):
                 
-                if logging.getLogger.isEnabledFor(logging.INFO): 
+                if logging.getLogger().isEnabledFor(logging.INFO): 
                     start = timeit.timeit()
                 
                 input_ids = config.t5_tok(smooth_prompt, return_tensors="pt").input_ids
                 gen_output = config.t5_qa_model.generate(input_ids)[0]
                 smooth_answer = config.t5_tok.decode(gen_output, skip_special_tokens=True)
                 
-                if logging.getLogger.isEnabledFor(logging.INFO): 
+                if logging.getLogger().isEnabledFor(logging.INFO): 
                     end = timeit.timeit()
                     logging.info(f"Inference time : {end-start}")
 
@@ -107,6 +108,6 @@ if __name__ == "__main__":
         logging.debug(f"Current question : {row['question']}")
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
         for j in range(1, max_radius):
-            certify_radius(current_question, perturbations_per_radius, N, top, j, filename)
+            certify_radius(current_question, perturbations_per_radius, N, top, j, alpha, filename)
     
 

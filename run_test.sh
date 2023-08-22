@@ -12,4 +12,4 @@ source /applis/environments/cuda_env.sh dahu 10.2
 source /applis/environments/conda.sh
 conda activate SMOOTHING
 echo "$(ls)"
-python3 ./testHF.py
+python3 ./prompt.py -p 2 -m 1 -r 3 -N 5 -t 5 -vvvv
