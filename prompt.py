@@ -83,33 +83,35 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.DEBUG)
 
     logging.debug(f"PPR : {perturbations_per_radius}, alpha : {alpha}, max_radius : {max_radius}, N : {N}, top : {top}, filename : {filename}")
-    # ### Load Q/A model and vocab ###
-    # t5_qa_model = AutoModelForSeq2SeqLM.from_pretrained("google/t5-11b-ssm-tqa")
-    # t5_tok = AutoTokenizer.from_pretrained("google/t5-11b-ssm-tqa")
-    # logging.debug("Loaded t5 model")
+    ### Load Q/A model and vocab ###
+    logging.debug("Loading model and tokenizer")
+    t5_qa_model = AutoModelForSeq2SeqLM.from_pretrained("google/t5-11b-ssm-tqa")
+    t5_tok = AutoTokenizer.from_pretrained("google/t5-11b-ssm-tqa")
+    logging.debug("Loaded t5 model and tokenizer")
 
-    # vocab = t5_tok.get_vocab()
-    # vocab_size = t5_tok.vocab_size
+    vocab = t5_tok.get_vocab()
+    vocab_size = t5_tok.vocab_size
 
-    # ### Load questions and answers
-    # dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
-    # logging.debug("Loaded dataset")
+    ### Load questions and answers
+    dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
+    logging.debug("Loaded dataset")
 
-    # ### Load smoothing model
-    # smoothing_model = pipeline('fill-mask', model='albert-base-v2')
+    ### Load smoothing model
+    smoothing_model = pipeline('fill-mask', model='albert-base-v2')
 
-    # ### Create csv file
-    # with open(filename, "w") as f:
-    #     writer = csv.writer(f)
-    #     writer.writerow(["question_id", "perturbed_question", "radius", "answer"])
-    #     f.close()
+    ### Create csv file
+    with open(filename, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["question_id", "perturbed_question", "radius", "answer"])
+        f.close()
     
-    # ### Prompt
-    # if args.num_lines : 
-    #     num_lines = args.num_lines
-    # else:
-    #     num_lines = len(dataset)
+    ### Prompt
+    if args.num_lines : 
+        num_lines = args.num_lines
+    else:
+        num_lines = len(dataset)
 
+    logging.debug("Reached generation loop")
     # for i, row in enumerate(dataset):
     #     if (i >=num_lines):
     #         break
