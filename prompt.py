@@ -22,7 +22,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
     
-def certify_radius(current_question : Question, nb_pert : int,  N : int, top : int, radius : int, filename : str = "output.csv"):
+def certify_radius(current_question : Question, nb_pert : int,  N : int, top : int, radius : int, filename : str):
     """
     For each radius :  
     * Generates <nb_pert> perturbed questions
@@ -112,12 +112,12 @@ if __name__ == "__main__":
         num_lines = len(dataset)
 
     logging.debug("Reached generation loop")
-    # for i, row in enumerate(dataset):
-    #     if (i >=num_lines):
-    #         break
-    #     logging.debug(f"Current question : {row['question']}")
-    #     current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'], vocab_size, vocab)
-    #     for j in range(1, max_radius):
-    #         certify_radius(perturbations_per_radius, N, top, j)
+    for i, row in enumerate(dataset):
+        if (i >=num_lines):
+            break
+        logging.debug(f"Current question : {row['question']}")
+        current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'], vocab_size, vocab)
+        for j in range(1, max_radius):
+            certify_radius(current_question, perturbations_per_radius, N, top, j, filename)
     
 

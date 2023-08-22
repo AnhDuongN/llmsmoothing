@@ -16,7 +16,7 @@ class Question:
     def __str__(self) -> str:
         return f"{self.id_num} \t {self.question} \t {self.answer}"
     
-    def generatePerturbedQuestion(self, radius : int, max_turns : int = 10) -> str:
+    def generatePerturbedQuestion(self, radius : int, max_turns : int) -> str:
         """
         From a question, generates a perturbed questions with <radius> word substitutions
         Parameters : 

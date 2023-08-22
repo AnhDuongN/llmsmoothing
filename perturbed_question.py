@@ -13,7 +13,7 @@ class PerturbedQuestion:
     def __str__(self):
         return f"Perturbed question : {self.question}, original question id : {self.id_num}"
     
-    def smoothN(self, N : int = 25, top : int = 10, alpha = 0.85) -> list:
+    def smoothN(self, N : int, top : int, alpha : float) -> list:
         """
         Generates N questions following a smoothing distribution around the perturbed question
         Parameters :
@@ -42,7 +42,7 @@ class PerturbedQuestion:
                 new_question[i] = self.synonyms[word][randint(0, top-1)]
         return ' '.join(new_question).replace('?','') + '?'
 
-    def generate_synonyms(self, top : int = 10) -> dict:
+    def generate_synonyms(self, top) -> dict:
         """
         Generates the synonyms of each word in the question, using ALBERT for Masked Language Modeling
         Parameters : 
