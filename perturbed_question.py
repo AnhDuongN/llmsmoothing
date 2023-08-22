@@ -2,6 +2,7 @@
 
 from random import random, randint
 from collections import defaultdict
+import config
 
 class PerturbedQuestion:
     def __init__(self, question, id_num):
@@ -49,15 +50,13 @@ class PerturbedQuestion:
         - top : number of synonyms to be generated for each word
         Returns : Dictionary indexed as <word, list of synonyms>
         """
-        
-        global smoothing_model
         smoothing_dict = defaultdict(list)
         for i, word in enumerate(self.questionWords):
             if i == len(self.questionWords) -1:
                 masked_question = ' '.join(self.questionWords[:-1])+"[MASK]?"
             else:
                 masked_question = ' '.join(self.questionWords[:i]) + "[MASK]" + ' '.join(self.questionWords[i+1:])
-            synonyms = smoothing_model(masked_question, top_k = top)
+            synonyms = config.smoothing_model(masked_question,top_k=top)
             for i, preds in enumerate(synonyms):
                 smoothing_dict[word].append(preds["token_str"].replace('_',''))
         self.synonyms = smoothing_dict

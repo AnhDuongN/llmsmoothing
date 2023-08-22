@@ -2,17 +2,16 @@
 from random import randint, sample
 from collections import defaultdict
 import logging
+import config
 from perturbed_question import PerturbedQuestion
 
 class Question:
-    def __init__(self, question : str, answer : list, id_num : int, vocab_size : int, vocab : dict):
+    def __init__(self, question : str, answer : list, id_num : int):
         self.question = question
         self.length = len(question.split())
         self.answer = answer
         self.id_num = id_num
         self.perturbations = defaultdict(list)
-        self.vocab = list(vocab.keys())
-        self.vocab_size = vocab_size
 
     def __str__(self) -> str:
         return f"{self.id_num} \t {self.question} \t {self.answer}"
@@ -31,7 +30,7 @@ class Question:
         indices, replacements = self.generateSample(radius, max_turns)
 
         for i, (index, replacement) in enumerate(zip(indices, replacements)):
-            words_list[index] = self.vocab[replacement]
+            words_list[index] = list(config.vocab.keys())[replacement]
 
         return PerturbedQuestion(' '.join(words_list).replace("?", "").replace("_","")+'?', self.id_num)
     
@@ -56,7 +55,7 @@ class Question:
             perturbedIndex = sample(range(0, self.length), radius)
             replaceIndex = [None]*radius
             for i, _ in enumerate(replaceIndex):
-                replaceIndex[i] = randint(0, self.vocab_size-1)
+                replaceIndex[i] = randint(0, config.vocab_size-1)
             if (perturbedIndex, replaceIndex) not in self.perturbations[radius]:
                 break
             turns +=1
