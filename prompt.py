@@ -20,7 +20,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-t", "--top", help="number of synonyms to be considered for smoothing",type=int, default=10)
     parser.add_argument("-o", "--output", help="output file name", default="output.csv")
     parser.add_argument("-v", "--verbose", action="count", default=0)
-
+    return parser
     
 def certify_radius(current_question : Question, nb_pert : int,  N : int, top : int, radius : int, filename : str = "output.csv"):
     """
