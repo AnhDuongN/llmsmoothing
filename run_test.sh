@@ -7,6 +7,8 @@
 #OAR --project pr-statify
 #OAR -p gpumodel='A100'
 
+
+rm output.csv
 source /applis/environments/cuda_env.sh dahu 10.2
 source /applis/environments/conda.sh
 conda activate SMOOTHING
