@@ -5,6 +5,7 @@ import csv
 import argparse
 import tqdm
 import config
+import torch
 from question import Question
 from datasets import load_dataset
 
@@ -47,7 +48,7 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
             if logging.getLogger().isEnabledFor(logging.INFO): 
                 start = timeit.timeit()
             
-            input_ids = config.t5_tok(smooth_prompt, return_tensors="pt").input_ids
+            input_ids = config.t5_tok(smooth_prompt, return_tensors="pt").input_ids.to(config.device)
             gen_output = config.t5_qa_model.generate(input_ids)[0]
             smooth_answer = config.t5_tok.decode(gen_output, skip_special_tokens=True)
             
@@ -59,6 +60,7 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
         f.close()
 
 if __name__ == "__main__":
+    print(config.device)
     parser = create_arg_parse()
     args = parser.parse_args()
 

@@ -12,4 +12,4 @@ rm output.csv
 source /applis/environments/cuda_env.sh dahu 10.2
 source /applis/environments/conda.sh
 conda activate SMOOTHING
-python3 ./prompt.py -vvvv
+python3 ./prompt.py-m 1 -r 1 -N 50 -vvvv
