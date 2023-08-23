@@ -51,7 +51,6 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
                 start = timeit.timeit()
             
             input_ids = config.t5_tok(smooth_prompt, return_tensors="pt").input_ids
-            input_ids = input_ids.to(config.device)
             gen_output = config.t5_qa_model.generate(input_ids)[0]
             smooth_answer = config.t5_tok.decode(gen_output, skip_special_tokens=True)
             
@@ -104,8 +103,7 @@ if __name__ == "__main__":
         num_lines = len(dataset)
 
     logging.debug("Reached generation loop")
-    config.t5_qa_model.to(config.device)
-
+    
     for i, row in enumerate(dataset):
         if (i >=num_lines):
             break
