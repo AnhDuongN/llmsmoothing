@@ -62,7 +62,7 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
         f.close()
 
 if __name__ == "__main__":
-    print(config.device)
+    print("Entered script!")
     parser = create_arg_parse()
     args = parser.parse_args()
 
