@@ -43,6 +43,7 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
 
         current_question.generate_synonyms_albert(top)
         smooth_prompts = current_question.smoothN(N, top, alpha)
+	config.model.to(config.device)
         for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts)):
             
             if logging.getLogger().isEnabledFor(logging.INFO): 
