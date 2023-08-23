@@ -38,6 +38,7 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
     - filename         : output file name
     """
     with open(filename, "a") as f:
+        torch.cuda.empty_cache() 
         writer = csv.writer(f)
         writer.writerow([current_question.id_num, current_question.question, 0, current_question.answer])
 
@@ -54,6 +55,9 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
             gen_output = config.t5_qa_model.generate(input_ids)[0]
             smooth_answer = config.t5_tok.decode(gen_output, skip_special_tokens=True)
             
+            del input_ids
+            torch.cuda.empty_cache() 
+
             if logging.getLogger().isEnabledFor(logging.INFO): 
                 end = timeit.timeit()
                 logging.info(f"Inference time : {end-start}")
