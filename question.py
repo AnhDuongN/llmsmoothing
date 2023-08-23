@@ -3,7 +3,6 @@ from random import randint, sample, random
 from collections import defaultdict
 import logging
 import config
-from perturbed_question import PerturbedQuestion
 
 class Question:
     def __init__(self, question : str, answer : list, id_num : int):
