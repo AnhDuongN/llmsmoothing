@@ -3,6 +3,7 @@ from random import randint, sample, random
 from collections import defaultdict
 import logging
 import config
+
 class Question:
     def __init__(self, question : str, answer : list, id_num : int):
         self.question = question

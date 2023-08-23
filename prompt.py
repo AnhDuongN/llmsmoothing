@@ -38,6 +38,8 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
     """
     with open(filename, "a") as f:
         writer = csv.writer(f)
+        writer.writerow([current_question.id_num, current_question.question, 0, current_question.answer])
+
         current_question.generate_synonyms_albert(top)
         smooth_prompts = current_question.smoothN(N, top)
         for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts)):
@@ -100,7 +102,6 @@ if __name__ == "__main__":
         logging.debug(f"Current question : {row['question']}")
         #Should be deleted after
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
-        writer.writerow([row['question_id'], row['question'], 0, row['answer']])
         for j in range(1, max_radius):
             certify_radius(current_question, N, top, j, filename)
     
