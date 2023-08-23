@@ -5,11 +5,9 @@
 #OAR --stdout %jobid%.out
 #OAR --stderr %jobid%.err
 #OAR --project pr-statify
-#OAR -p gpumodel='V100'
+#OAR -p gpumodel='A100'
 
-echo "$PWD"
 source /applis/environments/cuda_env.sh dahu 10.2
 source /applis/environments/conda.sh
 conda activate SMOOTHING
-echo "$(ls)"
 python3 ./prompt.py -vvvv
