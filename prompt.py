@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
+import config
 import logging
 import timeit
 import csv
 import argparse
 import tqdm
-import config
 import torch
 from question import Question
 from datasets import load_dataset
@@ -13,7 +13,7 @@ from datasets import load_dataset
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--alpha", help="alpha",type=float, default=0.75)
-    parser.add_argument("-m", "--num_lines", help="number of original questions to be taken from dataset",type=int, default = 10)
+    parser.add_argument("-m", "--num_lines", help="number of original questions to be taken from dataset, indexed from 0",type=int, default = 10)
     parser.add_argument("-r", "--max_radius", help="maximum radius to be certified",type=int, default=5)
     parser.add_argument("-N", "--smoothing_number", help="number of perturbations to be certified per radius",type=int, default=100)
     parser.add_argument("-t", "--top", help="number of synonyms to be considered for smoothing",type=int, default=10)
@@ -21,7 +21,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
     
-def certify_radius(current_question : Question,  N : int, top : int, radius : int, filename : str):
+def certify_radius(current_question : Question,  N : int, top : int, filename : str):
     """
     For each radius :  
     * Generates <nb_pert> perturbed questions
@@ -33,15 +33,12 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
     - nb_pert          : Number of perturbed questions to be generated for each original question
     - N                : Number of smoothed questions to be generated for each perturbed question
     - top              : number of synonyms considered when smoothing (variable "K" in the paper)
-    - radius           : number of perturbations
     - alpha            : Probability of not changing the original word when smoothing
     - filename         : output file name
     """
     with open(filename, "a") as f:
         torch.cuda.empty_cache() 
         writer = csv.writer(f)
-        writer.writerow([current_question.id_num, current_question.question, 0, current_question.answer])
-
         current_question.generate_synonyms_albert(top)
         smooth_prompts = current_question.smoothN(N, top, alpha)
 
@@ -54,11 +51,10 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
             del input_ids
             torch.cuda.empty_cache() 
 
-            writer.writerow([current_question.id_num, smooth_prompt, radius, smooth_answer])
+            writer.writerow([current_question.id_num, smooth_prompt, smooth_answer])
         f.close()
 
 if __name__ == "__main__":
-    print("Entered script!")
     parser = create_arg_parse()
     args = parser.parse_args()
 
@@ -67,28 +63,27 @@ if __name__ == "__main__":
     N = args.smoothing_number
     top = args.top
     filename = args.output
-
+    logger = logging.getLogger()
     if not args.verbose:
-        logging.basicConfig(level=logging.ERROR)
+        logger.setLevel(logging.ERROR)
     elif args.verbose == 1:
-        logging.basicConfig(level=logging.WARNING)
+        logger.setLevel(logging.WARNING)
     elif args.verbose == 2:
-        logging.basicConfig(level=logging.INFO)
+        logger.setLevel(logging.INFO)
     else:
-        logging.basicConfig(level=logging.DEBUG)
-    logging.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top : {top}, filename : {filename}")
-    
+        logger.setLevel(logging.DEBUG)
+    logging.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top : {top}, filename : {filename}, verbose : {args.verbose}") 
+
     ### Load questions and answers
     logging.debug("Loading dataset")
     dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
     logging.debug("Loaded dataset")
-
+    
     ### Create csv file
     with open(filename, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["question_id", "question", "radius", "answer"])
+        writer.writerow(["question_id", "question",  "answer"])
         f.close()
-    
     ### Prompt
     if args.num_lines : 
         num_lines = args.num_lines
@@ -96,14 +91,12 @@ if __name__ == "__main__":
         num_lines = len(dataset)
 
     logging.debug("Reached generation loop")
-    
     for i, row in enumerate(dataset):
-        if (i >=num_lines):
+        if (i >num_lines):
             break
         logging.debug(f"Current question : {row['question']}")
         #Should be deleted after
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
-        for j in range(1, max_radius):
-            certify_radius(current_question, N, top, j, filename)
+        certify_radius(current_question, N, top, filename)
     
 
