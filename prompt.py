@@ -21,7 +21,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
     
-def certify_radius(current_question : Question,  N : int, top : int, filename : str):
+def sample(current_question : Question,  N : int, top : int, filename : str):
     """
     For each radius :  
     * Generates <nb_pert> perturbed questions
@@ -36,9 +36,10 @@ def certify_radius(current_question : Question,  N : int, top : int, filename : 
     - alpha            : Probability of not changing the original word when smoothing
     - filename         : output file name
     """
-    with open(filename, "a") as f:
+    with open(filename, "w") as f:
         torch.cuda.empty_cache() 
         writer = csv.writer(f)
+        writer.writerow([current_question.question, current_question.answer])
         current_question.generate_synonyms_albert(top)
         smooth_prompts = current_question.smoothN(N, top, alpha)
 
@@ -52,7 +53,7 @@ def certify_radius(current_question : Question,  N : int, top : int, filename : 
             del input_ids
             torch.cuda.empty_cache() 
 
-            writer.writerow([current_question.id_num, smooth_prompt, smooth_answer])
+            writer.writerow([smooth_prompt, smooth_answer])
         f.close()
 
 if __name__ == "__main__":
@@ -80,11 +81,6 @@ if __name__ == "__main__":
     dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
     logging.debug("Loaded dataset")
     
-    ### Create csv file
-    with open(filename, "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(["question_id", "question",  "answer"])
-        f.close()
     ### Prompt
     if args.num_lines : 
         num_lines = args.num_lines
@@ -96,8 +92,20 @@ if __name__ == "__main__":
         if (i >num_lines):
             break
         logging.debug(f"Current question : {row['question']}")
+        frag_filename = filename+ str(i)
         #Should be deleted after
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
-        certify_radius(current_question, N, top, filename)
+        ### Smooth ###
+        # Sample once
+        sample(current_question, N, top, frag_filename)
+
+        # Compute z = MEB
+        # Resample
+        # Compute p delta, set delta, if .. -> z
+        ### Certify ###
+        # Sample once more
+        # Compute R
+        # Compute p 
+        # End
     
 
