@@ -43,6 +43,7 @@ def certify_radius(current_question : Question,  N : int, top : int, filename : 
         smooth_prompts = current_question.smoothN(N, top, alpha)
 
         for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts)):
+
             
             input_ids = config.t5_tok(smooth_prompt, return_tensors="pt").input_ids
             gen_output = config.t5_qa_model.generate(input_ids)[0]
