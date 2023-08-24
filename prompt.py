@@ -47,19 +47,12 @@ def certify_radius(current_question : Question,  N : int, top : int, radius : in
 
         for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts)):
             
-            if logging.getLogger().isEnabledFor(logging.INFO): 
-                start = timeit.timeit()
-            
             input_ids = config.t5_tok(smooth_prompt, return_tensors="pt").input_ids
             gen_output = config.t5_qa_model.generate(input_ids)[0]
             smooth_answer = config.t5_tok.decode(gen_output, skip_special_tokens=True)
             
             del input_ids
             torch.cuda.empty_cache() 
-
-            if logging.getLogger().isEnabledFor(logging.INFO): 
-                end = timeit.timeit()
-                logging.info(f"Inference time : {end-start}")
 
             writer.writerow([current_question.id_num, smooth_prompt, radius, smooth_answer])
         f.close()
