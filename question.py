@@ -43,7 +43,7 @@ class Question:
         """
         return
 
-    def smoothN(self, N : int, top : int, alpha : float) -> list:
+    def generate_smooth_N_questions(self, N : int, top : int, alpha : float) -> list:
         """
         Generates N questions following a smoothing distribution around the perturbed question
         Parameters :
@@ -55,10 +55,10 @@ class Question:
         #Generate the list of synonyms of each word in the question once to compute smoothed-out questions more easily
         ret = []
         for i in range(N):
-            ret.append(self.smooth(top, alpha))
+            ret.append(self.generate_smooth_questions(top, alpha))
         return ret
 
-    def smooth(self, top : int, alpha : float) -> str:
+    def generate_smooth_questions(self, top : int, alpha : float) -> str:
         """
         Generates a question following a smoothing distribution around the perturbed question
         Parameters : 
