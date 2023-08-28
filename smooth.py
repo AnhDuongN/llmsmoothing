@@ -91,6 +91,7 @@ if __name__ == "__main__":
         num_lines = len(dataset)
 
     logging.debug("Reached generation loop")
+    
     with open("smooth.csv", "w") as f:
         writer = csv.writer(f)
         writer.writerow(["question", "center_answer"])

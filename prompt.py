@@ -68,6 +68,7 @@ if __name__ == "__main__":
     top = args.top
     m = args.quartile
 
+    
     logger = logging.getLogger()
 
     if not args.verbose:
@@ -85,12 +86,11 @@ if __name__ == "__main__":
     dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
     logging.debug("Loaded dataset")
     
-    ### Prompt
     if args.num_lines : 
         num_lines = args.num_lines
     else:
         num_lines = len(dataset)
-
+    ### Prompt
     logging.debug("Reached generation loop")
     
     for i, row in enumerate(dataset):
@@ -98,15 +98,15 @@ if __name__ == "__main__":
             break
         logging.debug(f"Current question : {row['question']}")
         frag_filename = "question"+str(i)
-        #Should be deleted after
+
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
         current_question.generate_synonyms_albert(top)
 
         first_sample_name = frag_filename + "_1"
-        sample(current_question, N, top, alpha, first_sample_name)
+        sample(current_question, N, top, alpha, first_sample_name) #first N sample for smooth algorithm
         second_sample_name = frag_filename + "_2"
-        sample(current_question, N, top, alpha, second_sample_name)
+        sample(current_question, N, top, alpha, second_sample_name) #second N sample for smooth algorithm
         third_sample_name = frag_filename + "_3"
-        sample(current_question, m, top, alpha, third_sample_name)
+        sample(current_question, m, top, alpha, third_sample_name) #first m sample for certify algorithm
     
 

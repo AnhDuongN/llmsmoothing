@@ -16,12 +16,11 @@ class Question:
     def __str__(self) -> str:
         return f"{self.id_num} \t {self.question} \t {self.answer}"
     
-    def generate_synonyms_albert(self, top) -> dict:
+    def generate_synonyms_albert(self, top):
         """
         Generates the synonyms of each word in the question, using ALBERT for Masked Language Modeling
         Parameters : 
-        - top : number of synonyms to be generated for each word
-        Returns : Dictionary indexed as <word, list of synonyms>
+        - top : number of synonyms to be generated and chosen among for each word
         """
         smoothing_dict = defaultdict(list)
         for i, word in enumerate(self.questionWords):
@@ -34,7 +33,7 @@ class Question:
                 smoothing_dict[word].append(preds["token_str"].replace('_',''))
         self.synonyms = smoothing_dict
     
-    def generate_synonyms_glove(self, top) -> dict:
+    def generate_synonyms_glove(self, top):
         """
         Generates the synonyms of each word in the question, using GloVe for Masked Language Modeling
         Parameters : 
