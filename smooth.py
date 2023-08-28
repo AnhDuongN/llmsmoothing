@@ -1,27 +1,14 @@
 import pandas as pd
 import argparse
-from nltk.corpus import stopwords
-from nltk import download
-import gensim.downloader as api
+
 import statistics
-from question import Question
 import logging
 import numpy as np
 import csv
 from datasets import load_dataset
+import common
 
 
-### COMPUTE Word Movers Distance ###
-def preprocess(sentence):
-    return [w for w in sentence.lower().split() if w not in stop_words]
-
-def compute_wmd(sentence1 : str, sentence2 : str) -> float:
-    sentence_1 = preprocess(sentence1)
-    sentence_2 = preprocess(sentence2)
-    distance = model.wmdistance(sentence_1, sentence_2)
-    return distance
-
-####################################
 
 def smooth(delta : float, delta_1 : float, file_1 : str, file_2 : str):
     """
@@ -45,7 +32,7 @@ def computeMEB(filename : str):
     for i in range(len(answers)):
         temp_array = [None]*len(answers)
         for j in range(len(answers)):
-            temp_array[j] = compute_wmd(answers[i], answers[j])
+            temp_array[j] = common.compute_wmd(answers[i], answers[j])
         medians[i] = statistics.median(temp_array)
     median_radius = min(medians)
     median_index = medians.index(median_radius)
@@ -56,7 +43,7 @@ def compute_p(filename : str, center : str, radius : float) -> float:
     answers = data['answer'].tolist()
     count = 0
     for i in range(len(answers)):
-        if compute_wmd(answers[i], center) <= float:
+        if common.compute_wmd(answers[i], center) <= float:
             count +=1
     return count/len(answers)
 
@@ -68,7 +55,7 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset, indexed from 0",type=int, default = 10)
-    parser.add_argument("-d", "--delta", help="delta (in paper)",type=float, default = 0.01) #TODO better explanation
+    parser.add_argument("-D", "--delta", help="delta (in paper)",type=float, default = 0.01) #TODO better explanation
     parser.add_argument("-a", "--alpha_1", help="alpha_1, s.t. with probability 1-alpha_1, d(f(x) - f(bar(x)) < 2R) for all x-bar(x) leq r",
                         type = float, default = 0.001) #TODO better explanation
     parser.add_argument("-N", "--N", help="see N in prompt.py",type=int, default = 100) #TODO better explanation
@@ -79,11 +66,6 @@ if __name__ == "__main__":
 
     ### Load questions and answers
     dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
-
-    ### Downloading stuff for Word mover's distance
-    download('stopwords') 
-    stop_words = stopwords.words('english')
-    model = api.load('word2vec-google-news-300')
 
     if args.num_lines : 
         num_lines = args.num_lines
