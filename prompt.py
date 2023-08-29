@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 import logging
-import common
 import csv
 import argparse
 import tqdm
 import torch
-from question import Question
 
 
 def create_arg_parse() -> argparse.ArgumentParser:
@@ -17,10 +15,11 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-m", "--quartile", help="q-th quartile to take to estimate the enclosing ball with probability \
                         1- alpha_2 : see equation 8",type=int, default=100)
     parser.add_argument("-k", "--top_k", help="number of synonyms to be considered for smoothing",type=int, default=10)
+    parser.add_argument("-i", "--import_models", help="do import models", action="store_true")
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
-def sample(current_question : Question, N : int, top : int, alpha : float, filename : str):
+def sample(current_question, N : int, top : int, alpha : float, filename : str):
     """
     For each radius :  
     * Generates N smoothed questions
@@ -78,15 +77,18 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
-    logging.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top_k : {k}, verbose : {args.verbose}") 
+    logging.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
 
+    if args.import_models:
+        import common
+        from question import Question
     if args.num_lines : 
-        num_lines = args.num_lines
+        num_lines = args.num_lines -1
     else:
         num_lines = len(common.dataset)
     ### Prompt
     logging.debug("Reached generation loop")
-    
+    logging.debug(f"Num_lines : {num_lines}") 
     for i, row in enumerate(common.dataset):
         if (i >num_lines):
             break

@@ -6,7 +6,6 @@ import logging
 import numpy as np
 import csv
 from datasets import load_dataset
-import common
 
 
 
@@ -81,20 +80,25 @@ if __name__ == "__main__":
     Outputs a file, such that for each question, the "center" answer is given, and "ABSTAINED FROM ANSWERING" is given
     if smoothing is not possible.
     """
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset, indexed from 0",\
+    parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset",\
                         type=int, default = 10)
     parser.add_argument("-D", "--delta", help="delta such that the fall of center hat(f) encloses 1/2 + delta probability \
                         mass of the smoothed f(x)",type=float, default = 0.01)
     parser.add_argument("-a", "--alpha_1", help="alpha_1, s.t. with probability 1-alpha_1, d(f(x) - f(bar(x)) < 2R) for all x-bar(x) leq r",
                         type = float, default = 0.001)
     parser.add_argument("-N", "--N", help="number of smoothed inputs to take",type=int, default = 100)
-
+    parser.add_argument("-i", "--insert_model", help="import models", action="store_true")
     args = parser.parse_args()
 
     delta_1 = 2*np.exp(-2*args.N*(args.alpha_1**2)) #see theorem 3
+
+    if args.insert_model:
+        import common
     if args.num_lines : 
-        num_lines = args.num_lines
+        num_lines = args.num_lines -1
     else:
         num_lines = len(common.dataset)
 
