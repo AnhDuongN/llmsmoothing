@@ -140,7 +140,7 @@ def compute_rho_normalized(r : int, d : int, k : int, alpha : float, delta_times
             p_given += upper*p
             return p_given
         
-    logging.critical("No p was computed!")
+    logger.critical("No p was computed!")
     return -1
 
 def return_to_base(p : int, c : int, k : int, d : int) -> float:
@@ -169,7 +169,7 @@ def return_to_base(p : int, c : int, k : int, d : int) -> float:
 
     else:
         p_thre = '1.0'
-        logging.critical("Computed rho value is 1.")
+        logger.critical("Computed rho value is 1.")
     return float(p_thre)
 
 
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     """
     parser = create_arg_parse()
     args = parser.parse_args()
-    logger = logging.getLogger()
+    logger = logging.getLogger("__compute_rho__")
 
     if not args.verbose:
         logger.setLevel(logging.ERROR)

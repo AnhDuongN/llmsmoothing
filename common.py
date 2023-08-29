@@ -8,7 +8,6 @@ from datasets import load_dataset
 
 
 ##### Load Q/A model and vocab #####
-
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 print(f"Device used : {device}")
 

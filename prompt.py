@@ -5,7 +5,6 @@ import argparse
 import tqdm
 import torch
 
-
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--alpha", help="probability for a word not to be substituted in smoothing distribution",type=float, default=0.75)
@@ -66,10 +65,8 @@ if __name__ == "__main__":
     k = args.top_k
     m = args.quartile
     
-    logger = logging.getLogger()
+    logger = logging.getLogger("__prompt__")
 
-    if True:
-        import common
     if not args.verbose:
         logger.setLevel(logging.ERROR)
     elif args.verbose == 1:
@@ -79,22 +76,23 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
-    logging.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
+    logger.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
 
     if args.import_models:
         import common
         from question import Question
+
     if args.num_lines : 
         num_lines = args.num_lines -1
     else:
         num_lines = len(common.dataset)
     ### Prompt
-    logging.debug("Reached generation loop")
-    logging.debug(f"Num_lines : {num_lines}") logging.debug(f"Num lines : {num_lines}")
+    logger.debug("Reached generation loop")
+    
     for i, row in enumerate(common.dataset):
         if (i >num_lines):
             break
-        logging.debug(f"Current question : {row['question']}")
+        logger.debug(f"Current question : {row['question']}")
         frag_filename = "question"+str(i)
 
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])

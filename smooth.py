@@ -20,9 +20,12 @@ def smooth(delta : float, delta_1 : float, file_1 : str, file_2 : str) -> str:
     Returns : Center of the Minimum Enclosing Ball
     """
     center, radius = computeMEB(file_1)
+    logger.debug(f"MEB : Center : {center}, Radius : {radius}")
     rho = compute_p(file_2, center, radius)
+    logger.debug(f"p : {rho}")
     p_delta_1 = rho - delta_1
     delta_2 = 0.5 - p_delta_1
+    logger.debug(f"delta_1 : {delta_1}, delta_2 : {delta_2}, rho : {rho}")
     if max(delta_1, delta_2) <= delta:
         return center
     else : 
@@ -35,7 +38,7 @@ def computeMEB(filename : str) -> tuple[str, float]:
     - filename : File with the samples from the first sampling
     Returns : Center of the minimum enclosing ball and estimated first radius of the minimum enclosing ball
     """
-    logging.warning("Computing MEB : O(n^2) step")
+    logger.warning("Computing MEB : O(n^2) step")
 
     data = pd.read_csv(filename)
     answers = data['answer'].tolist() 
@@ -80,7 +83,7 @@ if __name__ == "__main__":
     Outputs a file, such that for each question, the "center" answer is given, and "ABSTAINED FROM ANSWERING" is given
     if smoothing is not possible.
     """
-    logger = logging.getLogger()
+    logger = logging.getLogger("__smooth__")
     logger.setLevel(logging.DEBUG)
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset",\
@@ -102,7 +105,7 @@ if __name__ == "__main__":
     else:
         num_lines = len(common.dataset)
 
-    logging.debug("Reached generation loop")
+    logger.debug("Reached generation loop")
     
     with open("smooth.csv", "w") as f:
         writer = csv.writer(f)

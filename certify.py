@@ -57,7 +57,7 @@ def fin_certify(filename : str, center : str,  r : int, d : int, k : int, alpha 
     """
 
     beta = (1-alpha)/k
-    
+
     normalized_p = compute_rho.compute_rho_normalized(r, d, k, alpha, delta_times_100)
     p = compute_rho.return_to_base(normalized_p, search_exponent, k, d)
 
@@ -70,7 +70,7 @@ def fin_certify(filename : str, center : str,  r : int, d : int, k : int, alpha 
 if __name__ == "__main__":
     parser = create_arg_parse()
     args = parser.parse_args()
-    logger = logging.getLogger()
+    logger = logging.getLogger("__certify__")
 
     if not args.verbose:
         logger.setLevel(logging.ERROR)
