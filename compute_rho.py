@@ -6,11 +6,13 @@ import logging
 
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--radius", help="number of original questions to be taken from dataset, indexed from 0",type=int, default = 10)
-    parser.add_argument("-d", "--dimension", help="delta (in paper)",type=int, default=14) #TODO better explanation
-    parser.add_argument("-k", "--k", help="top_k", type = int, default = 10) 
-    parser.add_argument("-a", "--alpha", help="alpha",type=float, default=0.75)
-    parser.add_argument("-D", "--delta_times_100", help="100 x D", type=int, default=5)
+    parser.add_argument("-r", "--radius", help="number of perturbations",type=int, default = 3)
+    parser.add_argument("-d", "--dimension", help="length of input sentence",type=int, default=14) #TODO better explanation
+    parser.add_argument("-k", "--k", help="number of synonyms to be considered for smoothing", type = int, default = 10) 
+    parser.add_argument("-a", "--alpha", help="probability for a word not to be substituted in smoothing distribution",\
+                        type=float, default=0.75)
+    parser.add_argument("-D", "--delta_times_100", help="delta such that the fall of center hat(f) encloses 1/2 + delta probability \
+                        mass of the smoothed f(x) TIMES 100", type=int, default=5)
     parser.add_argument("-c", "--search_exponent", help="search exponent for binary search", default = 30)
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
@@ -40,11 +42,13 @@ def compute_likelihood_ratio(u : int, v : int, k : int, alpha_tilda : float, bet
     Computes the likelihood ratio n(x, bar(x)) : For each z in X (input space) define 
     n(x, bar(x)) = P(phi(x) = z) / P(phi(bar(x)) = z)
     Parameters : 
-    - u     : coordinates flipped from x_c (the canonical sentence)
-    - v     : coordinates flipped from bar(x_c) (the perturbed sentence)
-    - k     : top k synonyms chosen to smooth each word (see e.g. Question.smoothN or see args)
-    - alpha : probability that a word from the canonical sentence isn't substituted (same alpha as in Question.smoothN())
-    - beta  : probability of each substitute if the word in the canonical sentence is substituted (same beta as in Question.smoothN())
+    - u           : coordinates flipped from x_c (the canonical sentence)
+    - v           : coordinates flipped from bar(x_c) (the perturbed sentence)
+    - k           : top k synonyms chosen to smooth each word (see e.g. Question.smoothN or see args)
+    - alpha_tilda : probability that a word from the canonical sentence isn't substituted (same alpha as in Question.smoothN()) 
+                    TIMES 100 TIMES K 
+    - beta_tilda  : probability of each substitute if the word in the canonical sentence is substituted (same beta as in Question.smoothN()) 
+                    TIMES 100 TIMES K
     Returns : 
     Likelihood ratio
     """
@@ -75,13 +79,23 @@ def compute_cardinalities_and_ratios(r : int , d : int, k : int, alpha_tilda : f
                     writer.writerow([v, u, compute_cardinality(u,v,r,d,k), compute_likelihood_ratio(v,u,k,alpha_tilda,beta_tilda)]) 
         f.close()
 
-def compute_rho_normalized(r : int, d : int, k : int, alpha : float, beta : float, delta_times_100 : int) -> int:
+def compute_rho_normalized(r : int, d : int, k : int, alpha : float, delta_times_100 : int) -> int:
     """
-    Idk what this is (some kind of binary search) but this works better than following the original algorithm so whatever
+    Computes a normalized (i.e. big integer) value of rho_r(p). We use large number normalization to avoid computing
+    with small probabilities, which entails floating point arithmetics errors. This code is based from the implementation
+    by the authors of [Tight certificates of adversarial robustness for randomly smoothed classifiers - Lee et al., 2019]
+
+    Parameters : 
+    - r               : Perturbation radius to certify
+    - d               : Dimension - length of the sentence
+    - k               : Number of synonyms considered at substitution in smoothing step
+    - alpha           : probability that a word from the canonical sentence isn't substituted (same alpha as in Question.smoothN()) 
+    - delta_times_100 : delta such that the fall of center hat(f) encloses 1/2 + delta probability mass of the smoothed f(x) TIMES 100
+    Returns : Normalized value of rho
     """
     # Normalization is done to avoid floating point arithmetics (if the probabilities are too small, floats aren't as accurate)
     alpha_tilda = alpha*100*k
-    beta_tilda = beta*100*k
+    beta_tilda = (1-alpha)*100 # [(1-alpha)/k] x 100 x k
     half_Z = (50+delta_times_100)*k * (100*k)**(d-1)
 
     compute_cardinalities_and_ratios(r, d, k, alpha_tilda, beta_tilda)
@@ -92,8 +106,13 @@ def compute_rho_normalized(r : int, d : int, k : int, alpha : float, beta : floa
     f.close()
 
     cardinalities = sorted(cardinalities, key=lambda x : x[-1], reverse=True)
+    # At this state, each item in cardinalities is a list formatted as
+    # [u, v, cardinality of L(u;v;r), likelihood ratio n(x, bar(x))]
+    # sorted by decreasing likelihood ratios
+
     # The following is based on the code of the GitHub of the MIT guys from the l0 paper (see threshold_mnist.py)
-    p_given, q_worst = 0,0
+    # This is an adaptation of algorithm 1 but with normalization to avoid floating point arithmetics errors
+    p_given = 0
     for _, cardinality in enumerate(cardinalities):
         cardinality = [eval(i) for i in cardinality]
         p = int(alpha_tilda**(d-cardinality[0]) * beta_tilda**(cardinality[0]))
@@ -107,23 +126,33 @@ def compute_rho_normalized(r : int, d : int, k : int, alpha : float, beta : floa
         else:
             upper = cardinality[2]
             lower = 0
+
+            # Binary search to estimate (0.5 - rho_r) / rho_prime_r.
+            # We know it's upper bound is cardinality of L(u;v;r)
+
             while upper-lower != 1:
                 mid = (lower+upper) >> 1
-                running_Z = q_worst + mid*q
+                running_Z = mid*q
                 if running_Z < half_Z:
                     lower = mid
                 else:
                     upper = mid
-            q_worst += upper*q
             p_given += upper*p
             return p_given
         
     logging.critical("No p was computed!")
     return -1
 
-def return_to_base(p : int, c : int, k : int, d : int):
+def return_to_base(p : int, c : int, k : int, d : int) -> float:
     """
-    Binary search to return the computed threshold to the original interval [0,1)
+    Binary search to return the normalized rho value to the original interval [0,1)
+    
+    Parameters : 
+    - p : computed rho value
+    - c : search exponent for binary search
+    - k : Number of synonyms considered at substitution in smoothing step
+    - d : Dimension - length of the sentence
+    Returns : Real rho value
     """
     upper, lower = 10 ** c, 0
     cst = ((10*k) ** c) * ((100*k)**(d-c))
@@ -134,21 +163,22 @@ def return_to_base(p : int, c : int, k : int, d : int):
             lower = mid
         else:
             upper = mid
+
     if upper != 10 ** c:
         p_thre = '0.' + str(upper)[:20]
+
     else:
         p_thre = '1.0'
+        logging.critical("Computed rho value is 1.")
     return float(p_thre)
 
-def compute_rho(r : int, d : int, k : int, alpha : float, beta : float, delta_times_100 : int, search_exponent : int) -> int:
-    """
-    Wrapper to call all functions to compute rho
-    """
-    normalized = compute_rho_normalized(r, d, k, alpha, beta, delta_times_100)
-    return return_to_base(normalized, search_exponent, k, d)
 
 if __name__ == "__main__":
-    # parse args : r, d, k 
+    """
+    Code for algorithm 1 (compute rho value).
+    Standalone script to test the computation of rho. Normally, the functions in this module are 
+    called by certify.py.
+    """
     parser = create_arg_parse()
     args = parser.parse_args()
     logger = logging.getLogger()
@@ -162,4 +192,5 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
-    compute_rho(args.radius, args.dimension, args.k, args.alpha, (1-args.alpha)/args.k, args.delta_times_100, args.search_exponent)
+    normalized = compute_rho_normalized(args.radius, args.dimension, args.k, args.alpha, (1-args.alpha)/args.k, args.delta_times_100)
+    print(return_to_base(normalized, args.search_exponent, args.k, args.dimension))

@@ -2,7 +2,7 @@
 from random import randint, sample, random
 from collections import defaultdict
 import logging
-import config
+import common
 
 class Question:
     def __init__(self, question : str, answer : list, id_num : int):
@@ -28,7 +28,7 @@ class Question:
                 masked_question = ' '.join(self.questionWords[:-1])+"[MASK]?"
             else:
                 masked_question = ' '.join(self.questionWords[:i]) + "[MASK]" + ' '.join(self.questionWords[i+1:])
-            synonyms = config.smoothing_model(masked_question,top_k=top)
+            synonyms = common.smoothing_model(masked_question,top_k=top)
             for i, preds in enumerate(synonyms):
                 smoothing_dict[word].append(preds["token_str"].replace('_',''))
         self.synonyms = smoothing_dict
@@ -40,11 +40,12 @@ class Question:
         - top : number of synonyms to be generated for each word
         Returns : Dictionary indexed as <word, list of synonyms>
         """
+        # TODO
         return
 
     def generate_smooth_N_questions(self, N : int, top : int, alpha : float) -> list:
         """
-        Generates N questions following a smoothing distribution around the perturbed question
+        Generates N questions following a smoothing distribution around the question
         Parameters :
         - N          : number of questions to be generated
         - top        : number of synonyms considered when smoothing (variable "K" in the paper)
@@ -59,7 +60,7 @@ class Question:
 
     def generate_smooth_questions(self, top : int, alpha : float) -> str:
         """
-        Generates a question following a smoothing distribution around the perturbed question
+        Generates a question following a smoothing distribution around the question
         Parameters : 
         - top           : number of synonyms considered when smoothing (variable "K" in the paper)
         - alpha         : probability of not smoothing a word by its synonym (variable "alpha" in the paper)
@@ -85,7 +86,7 @@ class Question:
         indices, replacements = self.generateSample(radius, max_turns)
 
         for i, (index, replacement) in enumerate(zip(indices, replacements)):
-            words_list[index] = list(config.vocab.keys())[replacement]
+            words_list[index] = list(common.vocab.keys())[replacement]
 
         return PerturbedQuestion(' '.join(words_list).replace("?", "").replace("_","")+'?', self.answer, self.id_num, radius)
     
@@ -110,7 +111,7 @@ class Question:
             perturbedIndex = sample(range(0, len(self.questionWords)), radius)
             replaceIndex = [None]*radius
             for i, _ in enumerate(replaceIndex):
-                replaceIndex[i] = randint(0, config.vocab_size-1)
+                replaceIndex[i] = randint(0, common.vocab_size-1)
             if (perturbedIndex, replaceIndex) not in self.perturbations[radius]:
                 break
             turns +=1

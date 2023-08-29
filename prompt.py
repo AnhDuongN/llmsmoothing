@@ -6,21 +6,21 @@ import argparse
 import tqdm
 import torch
 from question import Question
-from datasets import load_dataset
 
 
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--alpha", help="alpha",type=float, default=0.75)
+    parser.add_argument("-a", "--alpha", help="probability for a word not to be substituted in smoothing distribution",type=float, default=0.75)
     parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset, indexed from 0",type=int, default = 10)
     parser.add_argument("-r", "--max_radius", help="maximum radius to be certified",type=int, default=5)
-    parser.add_argument("-N", "--smoothing_number", help="number of perturbations to be certified per radius",type=int, default=100)
-    parser.add_argument("-m", "--quartile", type=int, default=100) #TODO : comment better
+    parser.add_argument("-N", "--smoothing_number", help="number of smoothed inputs to take",type=int, default=100)
+    parser.add_argument("-m", "--quartile", help="q-th quartile to take to estimate the enclosing ball with probability \
+                        1- alpha_2 : see equation 8",type=int, default=100)
     parser.add_argument("-k", "--top_k", help="number of synonyms to be considered for smoothing",type=int, default=10)
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
-def sample(current_question : Question,  N : int, top : int, alpha : float, filename : str):
+def sample(current_question : Question, N : int, top : int, alpha : float, filename : str):
     """
     For each radius :  
     * Generates N smoothed questions
@@ -80,19 +80,14 @@ if __name__ == "__main__":
 
     logging.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top_k : {k}, verbose : {args.verbose}") 
 
-    ### Load questions and answers
-    logging.debug("Loading dataset")
-    dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
-    logging.debug("Loaded dataset")
-    
     if args.num_lines : 
         num_lines = args.num_lines
     else:
-        num_lines = len(dataset)
+        num_lines = len(common.dataset)
     ### Prompt
     logging.debug("Reached generation loop")
     
-    for i, row in enumerate(dataset):
+    for i, row in enumerate(common.dataset):
         if (i >num_lines):
             break
         logging.debug(f"Current question : {row['question']}")
@@ -101,11 +96,14 @@ if __name__ == "__main__":
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
         current_question.generate_synonyms_albert(k)
 
+        # first N sample for smooth algorithm
         first_sample_name = frag_filename + "_1"
-        sample(current_question, N, k, alpha, first_sample_name)  # first N sample for smooth algorithm
+        sample(current_question, N, k, alpha, first_sample_name)  
+        # second N sample for smooth algorithm
         second_sample_name = frag_filename + "_2"
-        sample(current_question, N, k, alpha, second_sample_name) # second N sample for smooth algorithm
+        sample(current_question, N, k, alpha, second_sample_name) 
+        # first m sample for certify algorithm
         third_sample_name = frag_filename + "_3"
-        sample(current_question, m, k, alpha, third_sample_name)  # first m sample for certify algorithm
+        sample(current_question, m, k, alpha, third_sample_name)  
     
 

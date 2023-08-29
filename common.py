@@ -4,6 +4,8 @@ import gensim.downloader as api
 import logging
 from transformers import AutoTokenizer, pipeline, AutoModelForSeq2SeqLM
 import torch
+from datasets import load_dataset
+
 
 ##### Load Q/A model and vocab #####
 
@@ -22,6 +24,13 @@ vocab_size = t5_tok.vocab_size
 ##### Load smoothing model ##########
 smoothing_model = pipeline('fill-mask', model='albert-base-v2')
 print("Loaded all models!")
+
+#####################################
+########## Load dataset #############
+### Load questions and answers
+logging.debug("Loading dataset")
+dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
+logging.debug("Loaded dataset")
 
 #####################################
 ##### Word mover's distance utils ###
