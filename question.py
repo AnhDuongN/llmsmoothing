@@ -2,8 +2,7 @@
 from random import randint, sample, random
 from collections import defaultdict
 import logging
-import common
-
+from common import smoothing_model, vocab, vocab_size
 class Question:
     def __init__(self, question : str, answer : list, id_num : int):
         self.question = question
@@ -28,7 +27,7 @@ class Question:
                 masked_question = ' '.join(self.questionWords[:-1])+"[MASK]?"
             else:
                 masked_question = ' '.join(self.questionWords[:i]) + "[MASK]" + ' '.join(self.questionWords[i+1:])
-            synonyms = common.smoothing_model(masked_question,top_k=top)
+            synonyms = smoothing_model(masked_question,top_k=top)
             for i, preds in enumerate(synonyms):
                 smoothing_dict[word].append(preds["token_str"].replace('_',''))
         self.synonyms = smoothing_dict
@@ -86,7 +85,7 @@ class Question:
         indices, replacements = self.generateSample(radius, max_turns)
 
         for i, (index, replacement) in enumerate(zip(indices, replacements)):
-            words_list[index] = list(common.vocab.keys())[replacement]
+            words_list[index] = list(vocab.keys())[replacement]
 
         return PerturbedQuestion(' '.join(words_list).replace("?", "").replace("_","")+'?', self.answer, self.id_num, radius)
     
@@ -111,7 +110,7 @@ class Question:
             perturbedIndex = sample(range(0, len(self.questionWords)), radius)
             replaceIndex = [None]*radius
             for i, _ in enumerate(replaceIndex):
-                replaceIndex[i] = randint(0, common.vocab_size-1)
+                replaceIndex[i] = randint(0, vocab_size-1)
             if (perturbedIndex, replaceIndex) not in self.perturbations[radius]:
                 break
             turns +=1

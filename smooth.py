@@ -25,7 +25,7 @@ def smooth(delta : float, delta_1 : float, file_1 : str, file_2 : str) -> str:
     logger.debug(f"p : {rho}")
     p_delta_1 = rho - delta_1
     delta_2 = 0.5 - p_delta_1
-    logger.debug(f"delta_1 : {delta_1}, delta_2 : {delta_2}, rho : {rho}")
+    logger.debug(f"delta_1 : {delta_1}, delta_2 : {delta_2}, delta : {delta}")
     if max(delta_1, delta_2) <= delta:
         return center
     else : 
@@ -51,7 +51,7 @@ def computeMEB(filename : str) -> tuple[str, float]:
     for i in range(len(answers)):
         temp_array = [None]*len(answers)
         for j in range(len(answers)):
-            temp_array[j] = common.compute_wmd(answers[i], answers[j]) 
+            temp_array[j] = compute_wmd(answers[i], answers[j]) 
         medians[i] = statistics.median(temp_array)
         max_radii[i] = max(temp_array)
 
@@ -73,7 +73,7 @@ def compute_p(filename : str, center : str, radius : float) -> float:
 
     count = 0
     for i in range(len(answers)):
-        if common.compute_wmd(answers[i], center) <= radius:
+        if compute_wmd(answers[i], center) <= radius:
             count +=1
     return count/len(answers)
 
@@ -99,18 +99,18 @@ if __name__ == "__main__":
     delta_1 = 2*np.exp(-2*args.N*(args.alpha_1**2)) #see theorem 3
 
     if args.insert_model:
-        import common
+        from common import dataset, compute_wmd
     if args.num_lines : 
         num_lines = args.num_lines -1
     else:
-        num_lines = len(common.dataset)
+        num_lines = len(dataset)
 
     logger.debug("Reached generation loop")
     
     with open("smooth.csv", "w") as f:
         writer = csv.writer(f)
         writer.writerow(["question", "center_answer"])
-        for i, row in enumerate(common.dataset):
+        for i, row in enumerate(dataset):
             if (i >num_lines):
                 break
             frag_filename = "question"+str(i)

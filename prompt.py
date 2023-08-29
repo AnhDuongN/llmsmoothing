@@ -39,9 +39,9 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
 
         for _, smooth_prompt in tqdm.tqdm(enumerate(smooth_prompts)):
             
-            input_ids = common.t5_tok(smooth_prompt, return_tensors="pt").input_ids
-            gen_output = common.t5_qa_model.generate(input_ids)[0]
-            smooth_answer = common.t5_tok.decode(gen_output, skip_special_tokens=True)
+            input_ids = t5_tok(smooth_prompt, return_tensors="pt").input_ids
+            gen_output = t5_qa_model.generate(input_ids)[0]
+            smooth_answer = t5_tok.decode(gen_output, skip_special_tokens=True)
             
             del input_ids
             torch.cuda.empty_cache() 
@@ -79,17 +79,17 @@ if __name__ == "__main__":
     logger.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
 
     if args.import_models:
-        import common
+        from common import dataset, t5_tok, t5_qa_model
         from question import Question
 
     if args.num_lines : 
         num_lines = args.num_lines -1
     else:
-        num_lines = len(common.dataset)
+        num_lines = len(dataset)
     ### Prompt
     logger.debug("Reached generation loop")
     
-    for i, row in enumerate(common.dataset):
+    for i, row in enumerate(dataset):
         if (i >num_lines):
             break
         logger.debug(f"Current question : {row['question']}")

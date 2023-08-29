@@ -1,4 +1,3 @@
-import common
 import pandas as pd
 import compute_rho
 import numpy as np
@@ -18,6 +17,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-A", "--alpha_2", help="alpha_2 s.t. with probability 1-alpha_2, P(f(phi(X)) in MEB) > p",type=float, default=0.05)
     parser.add_argument("-m", "--quartile", help="number of samples to take q-th quartile to take to estimate the enclosing ball with probability 1- alpha_2 : see equation 8", \
                         type = int, default = 100) 
+    parser.add_argument("-i", "--import_models", help="do import models", action="store_true")
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
@@ -33,7 +33,7 @@ def certify(filename : str, center : str) -> list[float]:
     answers = data['answer'].tolist()
     distances = [None]*len(answers)
     for i, answer in enumerate(answers):
-        distances[i] = common.compute_wmd(center, answer)
+        distances[i] = compute_wmd(center, answer)
     return distances
 
 def fin_certify(filename : str, center : str,  r : int, d : int, k : int, alpha : float, 
@@ -81,6 +81,8 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
+    if args.import_models:
+        from common import compute_wmd
     with open("output.csv", "w") as f:
         writer = csv.writer(f)
         with open("smooth.csv", "r") as g:
