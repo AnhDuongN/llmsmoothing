@@ -68,6 +68,8 @@ if __name__ == "__main__":
     
     logger = logging.getLogger()
 
+    if True:
+        import common
     if not args.verbose:
         logger.setLevel(logging.ERROR)
     elif args.verbose == 1:
@@ -88,7 +90,7 @@ if __name__ == "__main__":
         num_lines = len(common.dataset)
     ### Prompt
     logging.debug("Reached generation loop")
-    logging.debug(f"Num_lines : {num_lines}") 
+    logging.debug(f"Num_lines : {num_lines}") logging.debug(f"Num lines : {num_lines}")
     for i, row in enumerate(common.dataset):
         if (i >num_lines):
             break
