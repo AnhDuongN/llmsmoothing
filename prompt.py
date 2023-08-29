@@ -9,7 +9,6 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--alpha", help="probability for a word not to be substituted in smoothing distribution",type=float, default=0.75)
     parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset, indexed from 0",type=int, default = 10)
-    parser.add_argument("-r", "--max_radius", help="maximum radius to be certified",type=int, default=5)
     parser.add_argument("-N", "--smoothing_number", help="number of smoothed inputs to take",type=int, default=100)
     parser.add_argument("-m", "--quartile", help="q-th quartile to take to estimate the enclosing ball with probability \
                         1- alpha_2 : see equation 8",type=int, default=100)
@@ -60,7 +59,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     alpha = args.alpha
-    max_radius = args.max_radius
     N = args.smoothing_number
     k = args.top_k
     m = args.quartile
@@ -76,7 +74,7 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
-    logger.debug(f"Alpha : {alpha}, max_radius : {max_radius}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
+    logger.debug(f"Alpha : {alpha}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
 
     if args.import_models:
         from common import dataset, t5_tok, t5_qa_model

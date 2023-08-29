@@ -13,7 +13,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-a", "--alpha", help="probability for a word not to be substituted in smoothing distribution",type=float, default=0.75)
     parser.add_argument("-D", "--delta_times_100", help="delta such that the fall of center hat(f) encloses 1/2 + delta probability \
                         mass of the smoothed f(x) TIMES 100", type=int, default=5)
-    parser.add_argument("-c", "--search_exponent", help="search exponent for binary search", default = 30)
+    parser.add_argument("-c", "--search_exponent", help="search exponent for binary search",type=int, default = 30)
     parser.add_argument("-A", "--alpha_2", help="alpha_2 s.t. with probability 1-alpha_2, P(f(phi(X)) in MEB) > p",type=float, default=0.05)
     parser.add_argument("-m", "--quartile", help="number of samples to take q-th quartile to take to estimate the enclosing ball with probability 1- alpha_2 : see equation 8", \
                         type = int, default = 100) 
@@ -64,7 +64,8 @@ def fin_certify(filename : str, center : str,  r : int, d : int, k : int, alpha 
     radii = certify(filename, center)
 
     q = p + np.sqrt(np.log(1/alpha_2)/(2*m))
-
+    logger.debug(f"p : {p}, q : {q}")
+    
     return (1+beta)*np.quantile(radii, q)
 
 if __name__ == "__main__":
@@ -87,7 +88,7 @@ if __name__ == "__main__":
         writer = csv.writer(f)
         with open("smooth.csv", "r") as g:
             next(g)
-            reader = csv.reader(f)
+            reader = csv.reader(g)
             for i, row in enumerate(reader):
                 question, center = row[0], row[1]
                 radius = fin_certify("question"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 

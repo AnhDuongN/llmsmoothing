@@ -13,7 +13,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
                         type=float, default=0.75)
     parser.add_argument("-D", "--delta_times_100", help="delta such that the fall of center hat(f) encloses 1/2 + delta probability \
                         mass of the smoothed f(x) TIMES 100", type=int, default=5)
-    parser.add_argument("-c", "--search_exponent", help="search exponent for binary search", default = 30)
+    parser.add_argument("-c", "--search_exponent", help="search exponent for binary search",type=int, default = 30)
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
@@ -192,5 +192,5 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
-    normalized = compute_rho_normalized(args.radius, args.dimension, args.k, args.alpha, (1-args.alpha)/args.k, args.delta_times_100)
+    normalized = compute_rho_normalized(args.radius, args.dimension, args.k, args.alpha,  args.delta_times_100)
     print(return_to_base(normalized, args.search_exponent, args.k, args.dimension))

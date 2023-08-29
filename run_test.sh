@@ -10,6 +10,6 @@
 source /applis/environments/cuda_env.sh bigfoot 11.7
 source /applis/environments/conda.sh
 conda activate SMOOTHING
+python3 prompt.py -a 0.4 -n 1 -N 100 -m 110 -k 3 -i -vvvv
 
-python3 ./prompt.py -n 1 -r 1 -N 50 -vvvv -t 10
 
