@@ -124,7 +124,7 @@ if __name__ == "__main__":
         if (i >num_lines):
             break
         logger.debug(f"Current question : {row['question']}")
-        frag_filename = "question"+str(i)
+        frag_filename = "question_prompt"+str(i)
 
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
         current_question.generate_synonyms_albert(k)

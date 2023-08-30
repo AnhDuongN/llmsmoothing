@@ -7,7 +7,6 @@ import torch
 import prompt
 import numpy as np
 import certify
-from question import Question
 
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -55,6 +54,7 @@ if __name__ == "__main__":
 
     if args.import_models:
         from common import *
+        from question import Question
     if args.num_lines : 
         num_lines = args.num_lines -1
     else:
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     
         logger.debug("Reached smooth and certification phase")
 
-        with open("output.csv", "a") as file_certify : 
+        with open("output_main.csv", "a") as file_certify : 
             writer = csv.writer(file_certify)
             center = smooth.smooth(args.delta, delta_1, first_sample_name, second_sample_name)
             radius = certify.fin_certify("question"+str(i)+"_3", center, args.radius, len(row['question'].split()), args.top_k, 
