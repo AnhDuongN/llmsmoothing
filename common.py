@@ -43,9 +43,13 @@ logging.debug("Loaded dataset")
 #####################################
 ##### Word mover's distance utils ###
 
+logging.debug("Loading WMD utils")
+
 download('stopwords') 
 stop_words = stopwords.words('english')
 model = api.load('word2vec-google-news-300')
+
+logging.debug("Loaded WMD utils!")
 
 ### COMPUTE Word Movers Distance ###
 def preprocess(sentence):

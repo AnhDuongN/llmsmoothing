@@ -2,7 +2,7 @@
 from random import randint, sample, random
 from collections import defaultdict
 import logging
-from common import smoothing_model, vocab, vocab_size
+from common import smoothing_model, vocab, vocab_size, model
 
 class Question:
     def __init__(self, question : str, answer : list, id_num : int):
@@ -33,9 +33,9 @@ class Question:
                 smoothing_dict[word].append(preds["token_str"].replace('_',''))
         self.synonyms = smoothing_dict
     
-    def generate_synonyms_WordNet(self, top):
+    def generate_synonyms_word2vec(self, top):
         """
-        Generates the synonyms of each word in the question, using GloVe for Masked Language Modeling
+        Generates the synonyms of each word in the question, using word2vec
         Parameters : 
         - top : number of synonyms to be generated for each word
         Returns : Dictionary indexed as <word, list of synonyms>
@@ -44,20 +44,8 @@ class Question:
         for i, word in enumerate(self.questionWords):
             if i == len(self.questionWords) - 1 : 
                 word = word.replace('?', "")
-            logger.debug(f"Synonym set of {word} : ")
-            for synset in wn.synsets(word):
-                logger.debug(f"{synset}")
-                def helper_break(synset, top):
-                    for lemma in synset.lemmas():
-                        if len(smoothing_dict[word]) > top:
-                            return
-                        smoothing_dict[word].append(lemma)
-
-                helper_break(synset, top)
-
-            if len(smoothing_dict[word]) < top:
-                print("Generated too few synonyms")
-        logger.debug(smoothing_dict)
+            smoothing_dict[word] = model.most_similar(positive=[word], topn = top)
+        logging.debug(smoothing_dict)
         self.synonyms = smoothing_dict
 
 
@@ -156,5 +144,7 @@ if __name__ == "__main__":
     logger = logging.getLogger("__smooth__")
     logger.setLevel(logging.DEBUG)
     for i, row in enumerate(dataset):
-        current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
-        current_question.generate_synonyms_WordNet(10)
+        while i < 10:
+            current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
+            current_question.generate_synonyms_word2vec(10)
+            i+=1
