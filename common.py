@@ -67,7 +67,7 @@ def compute_wmd(sentence1 : str, sentence2 : str) -> float:
         print(f"Sentence 1 : {sentence1} \n Sentence 2 : {sentence2}")
     return distance
 
-def encode(se : str) -> tuple(list[str], list[torch.tensor]):
+def encode(se : str):
     """
     Returns word encodings of the sentence. Used by alternate compute wmd function.
     Parameters : 

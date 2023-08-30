@@ -3,7 +3,6 @@ from random import randint, sample, random
 from collections import defaultdict
 import logging
 from common import smoothing_model, vocab, vocab_size
-from nltk.corpus import wordnet as wn
 
 class Question:
     def __init__(self, question : str, answer : list, id_num : int):
@@ -50,7 +49,7 @@ class Question:
                 logger.debug(f"{synset}")
                 def helper_break(synset, top):
                     for lemma in synset.lemmas():
-                        if len(smoothing_dict[word] > top):
+                        if len(smoothing_dict[word]) > top:
                             return
                         smoothing_dict[word].append(lemma)
 
@@ -148,6 +147,12 @@ class PerturbedQuestion(Question):
 
 if __name__ == "__main__":
     from common import dataset
+    import nltk
+    nltk.download("wordnet")
+    nltk.download('omw-1.4')
+
+    from nltk.corpus import wordnet as wn
+
     logger = logging.getLogger("__smooth__")
     logger.setLevel(logging.DEBUG)
     for i, row in enumerate(dataset):
