@@ -42,11 +42,30 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
             gen_output = t5_qa_model.generate(input_ids)[0]
             smooth_answer = t5_tok.decode(gen_output, skip_special_tokens=True)
             
+            if not verify_vocab_in_w2v(smooth_answer):
+                logger.debug(f"Answer {smooth_answer} not in vocabulary of Word2Vec")
+                i = 0
+                while (i < 10) and (not verify_vocab_in_w2v(smooth_answer)):
+                    new_prompt = current_question.generate_smooth_questions(top, alpha)
+                    input_ids = t5_tok(new_prompt, return_tensors="pt").input_ids
+                    gen_output = t5_qa_model.generate(input_ids)[0]
+                    smooth_answer = t5_tok.decode(gen_output, skip_special_tokens=True)
+                    i+=1
+                if i == 10:
+                    logger.debug(f"Answer re-roll exceeded 10 rolls, refrain to put down answer")
+                    continue
             del input_ids
             torch.cuda.empty_cache() 
 
             writer.writerow([smooth_prompt, smooth_answer])
         f.close()
+
+def verify_vocab_in_w2v(answer : str):
+    answer = answer.split()
+    for word in answer:
+        if word in model.vocab:
+            return True
+    return False
 
 if __name__ == "__main__":
     """
@@ -77,7 +96,7 @@ if __name__ == "__main__":
     logger.debug(f"Alpha : {alpha}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
 
     if args.import_models:
-        from common import dataset, t5_tok, t5_qa_model
+        from common import dataset, t5_tok, t5_qa_model, model
         from question import Question
 
     if args.num_lines : 

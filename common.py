@@ -47,28 +47,28 @@ logging.debug("Loaded dataset")
 
 download('stopwords') 
 stop_words = stopwords.words('english')
-#model = api.load('word2vec-google-news-300')
-embedding = TransformerWordEmbeddings("google/t5-11b-ssm-tqa", subtoken_pooling='mean')
+model = api.load('word2vec-google-news-300')
+#embedding = TransformerWordEmbeddings("google/t5-11b-ssm-tqa", subtoken_pooling='mean')
 
 ### COMPUTE Word Movers Distance ###
 
 def preprocess(sentence):
     return [w for w in sentence.lower().split() if w not in stop_words]
 
-# def _compute_wmd(sentence1 : str, sentence2 : str) -> float:
-#     sentence_1 = preprocess(sentence1)
-#     sentence_2 = preprocess(sentence2)
-#     distance = model.wmdistance(sentence_1, sentence_2)
-#     if distance == float('inf'):
-#         print(f"Sentence 1 : {sentence1} \n Sentence 2 : {sentence2}")
-#     return distance
+def compute_wmd(sentence1 : str, sentence2 : str) -> float:
+    sentence_1 = preprocess(sentence1)
+    sentence_2 = preprocess(sentence2)
+    distance = model.wmdistance(sentence_1, sentence_2)
+    if distance == float('inf'):
+        print(f"Sentence 1 : {sentence1} \n Sentence 2 : {sentence2}")
+    return distance
 
 def encode(words : str):
     sentence = Sentence(words)
-    embedding.embed(sentence)
+    # embedding.embed(sentence)
     return [token for token in sentence if token not in stop_words], [token.embedding for token in sentence if token not in stop_words]
             
-def compute_wmd(document1 : str, document2 : str) -> float:
+def _compute_wmd(document1 : str, document2 : str) -> float:
     """
     """
     document1, encodings1 = encode(document1)

@@ -31,9 +31,13 @@ def certify(filename : str, center : str) -> list[float]:
     """
     data = pd.read_csv(filename)
     answers = data['answer'].tolist()
-    distances = [None]*len(answers)
+    distances = []
     for i, answer in enumerate(answers):
-        distances[i] = compute_wmd(center, answer)
+        dist = compute_wmd(center, answer)
+        if dist != float('inf'):
+            distances.append(dist)
+        else:
+            logger.debug("Inf distance!")
     return distances
 
 def fin_certify(filename : str, center : str,  r : int, d : int, k : int, alpha : float, 
