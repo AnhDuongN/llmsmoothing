@@ -3,6 +3,8 @@ from random import randint, sample, random
 from collections import defaultdict
 import logging
 from common import smoothing_model, vocab, vocab_size
+from nltk.corpus import wordnet as wn
+
 class Question:
     def __init__(self, question : str, answer : list, id_num : int):
         self.question = question
@@ -32,15 +34,32 @@ class Question:
                 smoothing_dict[word].append(preds["token_str"].replace('_',''))
         self.synonyms = smoothing_dict
     
-    def generate_synonyms_glove(self, top):
+    def generate_synonyms_WordNet(self, top):
         """
         Generates the synonyms of each word in the question, using GloVe for Masked Language Modeling
         Parameters : 
         - top : number of synonyms to be generated for each word
         Returns : Dictionary indexed as <word, list of synonyms>
         """
-        # TODO
-        return
+        smoothing_dict = defaultdict(list)
+        for i, word in enumerate(self.questionWords):
+            if i == len(self.questionWords) - 1 : 
+                word = word.replace('?', "")
+            for synset in wn.synsets(word):
+
+                def helper_break(synset, top):
+                    for lemma in synset.lemmas():
+                        if len(smoothing_dict[word] > top):
+                            return
+                        smoothing_dict[word].append(lemma)
+
+                helper_break(synset, top)
+
+            if len(smoothing_dict[word]) < top:
+                print("Generated too few synonyms")
+        print(smoothing_dict)
+        self.synonyms = smoothing_dict
+
 
     def generate_smooth_N_questions(self, N : int, top : int, alpha : float) -> list:
         """
@@ -125,3 +144,9 @@ class PerturbedQuestion(Question):
     
     def __str__(self):
         return f"Perturbed question : {self.question}, original question id : {self.id_num}, radius : {self.radius}"
+
+if __name__ == "__main__":
+    from common import dataset
+    for i, row in enumerate(dataset):
+        current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
+        current_question.generate_synonyms_WordNet(10)

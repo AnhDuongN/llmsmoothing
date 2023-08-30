@@ -64,7 +64,10 @@ if __name__ == "__main__":
 
     ### Prompt
     logger.debug("Reached generation loop")
-    
+    with open("output.csv", "w") as file_certify : 
+        writer = csv.writer(file_certify)
+        writer.writerow(["question", "center_answer", "ball_radius", "certified_radius", "probability"])
+        file_certify.close()
 
     for i, row in enumerate(dataset):
         if (i >num_lines):
@@ -85,13 +88,7 @@ if __name__ == "__main__":
         third_sample_name = frag_filename + "_3"
         prompt.sample(current_question, args.smoothing_number, args.top_k, args.alpha, third_sample_name)  
     
-
-        logger.debug("Reached certification phase")
-
-        with open("output.csv", "w") as file_certify : 
-            writer = csv.writer(file_certify)
-            writer.writerow(["question", "center_answer", "ball_radius", "certified_radius", "probability"])
-            file_certify.close()
+        logger.debug("Reached smooth and certification phase")
 
         with open("output.csv", "a") as file_certify : 
             writer = csv.writer(file_certify)

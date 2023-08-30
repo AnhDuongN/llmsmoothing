@@ -42,8 +42,16 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
             gen_output = t5_qa_model.generate(input_ids)[0]
             smooth_answer = t5_tok.decode(gen_output, skip_special_tokens=True)
             
+            # If all the words of the answer are not in word2vec's vocabulary, 
+            # we need to roll a new question, so that we can compute Word Mover's Distance
+
             if not verify_vocab_in_w2v(smooth_answer):
                 logger.debug(f"Answer {smooth_answer} not in vocabulary of Word2Vec")
+                # We re-roll a new question 10 times. If this fails, we go to the next smooth question
+                # N.B. Another option is actually just to continue and write nothing for this smooth question.
+                
+                # continue
+
                 i = 0
                 while (i < 10) and (not verify_vocab_in_w2v(smooth_answer)):
                     new_prompt = current_question.generate_smooth_questions(top, alpha)
@@ -60,10 +68,16 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
             writer.writerow([smooth_prompt, smooth_answer])
         f.close()
 
-def verify_vocab_in_w2v(answer : str):
+def verify_vocab_in_w2v(answer : str) -> bool:
+    """
+    Verifies if at least one word in the answer is in the vocabulary of the Word2Vec model
+    so that Word Mover's Distance can be computed.
+    Parameters : answer : the answer to verify
+    Returns    : True if at least one word is in the vocabulary, otherwise False
+    """
     answer = answer.split()
     for word in answer:
-        if word in model.vocab:
+        if word in model.key_to_index:
             return True
     return False
 
