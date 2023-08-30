@@ -45,8 +45,9 @@ class Question:
         for i, word in enumerate(self.questionWords):
             if i == len(self.questionWords) - 1 : 
                 word = word.replace('?', "")
+            logger.debug(f"Synonym set of {word} : ")
             for synset in wn.synsets(word):
-
+                logger.debug(f"{synset}")
                 def helper_break(synset, top):
                     for lemma in synset.lemmas():
                         if len(smoothing_dict[word] > top):
@@ -57,7 +58,7 @@ class Question:
 
             if len(smoothing_dict[word]) < top:
                 print("Generated too few synonyms")
-        print(smoothing_dict)
+        logger.debug(smoothing_dict)
         self.synonyms = smoothing_dict
 
 
@@ -147,6 +148,8 @@ class PerturbedQuestion(Question):
 
 if __name__ == "__main__":
     from common import dataset
+    logger = logging.getLogger("__smooth__")
+    logger.setLevel(logging.DEBUG)
     for i, row in enumerate(dataset):
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
         current_question.generate_synonyms_WordNet(10)
