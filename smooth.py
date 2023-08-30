@@ -51,7 +51,8 @@ def computeMEB(filename : str) -> tuple[str, float]:
     for i in range(len(answers)):
         temp_array = [None]*len(answers)
         for j in range(len(answers)):
-            temp_array[j] = compute_wmd(answers[i], answers[j]) 
+            temp_array[j] = compute_wmd(answers[i], answers[j])
+            logger.debug(f"Distance : {temp_array[j]}")
         medians[i] = statistics.median(temp_array)
         max_radii[i] = max(temp_array)
 
