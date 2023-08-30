@@ -65,7 +65,7 @@ def fin_certify(filename : str, center : str,  r : int, d : int, k : int, alpha 
 
     q = p + np.sqrt(np.log(1/alpha_2)/(2*m))
     logger.debug(f"p : {p}, q : {q}")
-    
+    logger.debug(f"radii : {radii}")
     return (1+beta)*np.quantile(radii, q)
 
 if __name__ == "__main__":
@@ -93,6 +93,6 @@ if __name__ == "__main__":
                 question, center = row[0], row[1]
                 radius = fin_certify("question"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
                             args.alpha, args.delta_times_100, args.search_exponent, args.alpha_2, args.quartile)
-                f.writerow([question, center, radius])
+                writer.writerow([question, center, radius])
             g.close()
         f.close()

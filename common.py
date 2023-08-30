@@ -46,4 +46,6 @@ def compute_wmd(sentence1 : str, sentence2 : str) -> float:
     sentence_1 = preprocess(sentence1)
     sentence_2 = preprocess(sentence2)
     distance = model.wmdistance(sentence_1, sentence_2)
+    if distance == float('inf'):
+        print(f"Sentence 1 : {sentence1} \n Sentence 2 : {sentence2}")
     return distance
