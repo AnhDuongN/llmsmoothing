@@ -49,7 +49,6 @@ if __name__ == "__main__":
     if True:
         from common import *
         from question import Question
-
     if args.num_lines : 
         num_lines = args.num_lines -1
     else:

@@ -40,12 +40,28 @@ class Question:
         - top : number of synonyms to be generated for each word
         Returns : Dictionary indexed as <word, list of synonyms>
         """
+        logger.debug(f"Generate synonyms for {self.question}")
         smoothing_dict = defaultdict(list)
         for i, word in enumerate(self.questionWords):
             if i == len(self.questionWords) - 1 : 
                 word = word.replace('?', "")
-            smoothing_dict[word] = model.most_similar(positive=[word], topn = top)
-        logging.debug(smoothing_dict)
+            if word in model.key_to_index:
+                smoothing_dict[word] = model.most_similar(positive=[word], topn = top)
+            else:
+                lst = []
+                for i in range(top):
+                    substitute = randint(0,len(word))
+                    new_word = ""
+                    for i,char in enumerate(word):
+                        if i == substitute:
+                            ascii_add = randint(-top//2, top//2)
+                            new_char = chr(ord(char) + ascii_add)
+                            new_word += new_char
+                        else:
+                            new_word += char
+                    lst.append(new_word)
+                smoothing_dict[word] = lst
+        print(smoothing_dict)
         self.synonyms = smoothing_dict
 
 
@@ -139,7 +155,7 @@ if __name__ == "__main__":
     logger = logging.getLogger("__smooth__")
     logger.setLevel(logging.DEBUG)
     for i, row in enumerate(dataset):
-        while i < 10:
+        if i < 10:
             current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
             current_question.generate_synonyms_word2vec(10)
-            i+=1
+        i+=1
