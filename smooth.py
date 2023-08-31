@@ -40,7 +40,7 @@ def computeMEB(filename : str) -> tuple[str, float]:
     """
     logger.warning("Computing MEB : O(n^2) step")
 
-    data = pd.read_csv(filename)
+    data = pd.read_csv(filename, header=None, names=['question', 'answer'], skiprows=0)
     answers = data['answer'].tolist() 
 
     # Allocating the space is slightly faster than appending
@@ -69,7 +69,7 @@ def compute_p(filename : str, center : str, radius : float) -> float:
     - radius   : radius of the MEB of the first sampling
     Returns : Proportion of points of the 2nd sampling that fall into the MEB of the 1st sampling
     """
-    data = pd.read_csv(filename)
+    data = pd.read_csv(filename, header=None, names=['question', 'answer'], skiprows=0)
     answers = data['answer'].tolist()
 
     count = 0
@@ -94,12 +94,11 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--alpha_1", help="alpha_1, s.t. with probability 1-alpha_1, d(f(x) - f(bar(x)) < 2R) for all x-bar(x) leq r",
                         type = float, default = 0.001)
     parser.add_argument("-N", "--N", help="number of smoothed inputs to take",type=int, default = 100)
-    parser.add_argument("-i", "--insert_model", help="import models", action="store_true")
     args = parser.parse_args()
 
     delta_1 = 2*np.exp(-2*args.N*(args.alpha_1**2)) #see theorem 3
 
-    if args.insert_model:
+    if True:
         from common import dataset, compute_wmd
     if args.num_lines : 
         num_lines = args.num_lines -1
@@ -110,13 +109,26 @@ if __name__ == "__main__":
     
     with open("smooth.csv", "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["question", "center_answer"])
+        writer.writerow([args.delta])
         for i, row in enumerate(dataset):
             if (i >num_lines):
                 break
             frag_filename = "question"+str(i)
             first_sample_name = frag_filename + "_1"
             second_sample_name = frag_filename + "_2"
+
+            with open(first_sample_name, 'r') as first_s:
+                reader = csv.reader(first_s)
+                row1 = next(reader)
+                assert(row1[0] == args.N)
+                first_s.close()
+
+            with open(second_sample_name, 'r') as sec_s:
+                reader = csv.reader(sec_s)
+                row1 = next(reader)
+                assert(row1[0] == args.N)
+                sec_s.close()
+                
             writer.writerow([row['question'], smooth(args.delta, delta_1, first_sample_name, second_sample_name)])
         f.close()
     

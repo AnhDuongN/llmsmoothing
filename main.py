@@ -2,12 +2,9 @@ import logging
 import csv
 import argparse
 import smooth
-import tqdm
-import torch
 import prompt
 import numpy as np
 import certify
-from question import Question
 
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -27,17 +24,13 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-r", "--radius", help="number of perturbations",type=int, default = 3)
     parser.add_argument("-c", "--search_exponent", help="search exponent for binary search",type=int, default = 30)
 
-    parser.add_argument("-i", "--import_models", help="do import models", action="store_true")
-
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
 if __name__ == "__main__":
     """
-    Samples Z = {z_i} such that z_i follows a distribution f(\phi (x)) three times, twice for "smooth" step and once for "certify" step.
-    For each question, outputs 3 files corresponding to the three Z samples named as question<question_number>_<1/2/3>.
-    Computation of MEB and of the center of the ball is done in smooth.py, using question<question_number>_1 and question<question_number>_2.
-    Computation of the max radius is done in certify.py, using question<question_number>_3.
+    Runs everything. 
+    Is equivalent to calling prompt.py -> smooth.py -> certify.py with the same argument values
     """
     parser = create_arg_parse()
     args = parser.parse_args()
@@ -53,8 +46,10 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
-    if args.import_models:
+    if True:
         from common import *
+        from question import Question
+
     if args.num_lines : 
         num_lines = args.num_lines -1
     else:
@@ -64,7 +59,7 @@ if __name__ == "__main__":
 
     ### Prompt
     logger.debug("Reached generation loop")
-    with open("output.csv", "w") as file_certify : 
+    with open("output_main.csv", "w") as file_certify : 
         writer = csv.writer(file_certify)
         writer.writerow(["question", "center_answer", "ball_radius", "certified_radius", "probability"])
         file_certify.close()
@@ -73,7 +68,7 @@ if __name__ == "__main__":
         if (i >num_lines):
             break
         logger.debug(f"Current question : {row['question']}")
-        frag_filename = "question"+str(i)
+        frag_filename = "question_main"+str(i)
 
         current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
         current_question.generate_synonyms_albert(args.top_k)
@@ -90,11 +85,12 @@ if __name__ == "__main__":
     
         logger.debug("Reached smooth and certification phase")
 
-        with open("output.csv", "a") as file_certify : 
+        with open("output_main.csv", "a") as file_certify : 
             writer = csv.writer(file_certify)
             center = smooth.smooth(args.delta, delta_1, first_sample_name, second_sample_name)
             radius = certify.fin_certify("question"+str(i)+"_3", center, args.radius, len(row['question'].split()), args.top_k, 
             args.alpha, int(args.delta * 100), args.search_exponent, args.alpha_2, args.quantile)
             writer.writerow([row['question'], center, args.radius, radius, 1-(args.alpha_1 + args.alpha_2)])
         file_certify.close()
+
 

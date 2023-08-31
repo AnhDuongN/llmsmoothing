@@ -15,9 +15,8 @@ def create_arg_parse() -> argparse.ArgumentParser:
                         mass of the smoothed f(x) TIMES 100", type=int, default=5)
     parser.add_argument("-c", "--search_exponent", help="search exponent for binary search",type=int, default = 30)
     parser.add_argument("-A", "--alpha_2", help="alpha_2 s.t. with probability 1-alpha_2, P(f(phi(X)) in MEB) > p",type=float, default=0.05)
-    parser.add_argument("-m", "--quartile", help="number of samples to take q-th quartile to take to estimate the enclosing ball with probability 1- alpha_2 : see equation 8", \
+    parser.add_argument("-m", "--quantile", help="number of samples to take q-th quartile to take to estimate the enclosing ball with probability 1- alpha_2 : see equation 8", \
                         type = int, default = 100) 
-    parser.add_argument("-i", "--import_models", help="do import models", action="store_true")
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
@@ -32,7 +31,7 @@ def certify(filename : str, center : str) -> list[float]:
     data = pd.read_csv(filename)
     answers = data['answer'].tolist()
     distances = []
-    for i, answer in enumerate(answers):
+    for _, answer in enumerate(answers):
         dist = compute_wmd(center, answer)
         if dist != float('inf'):
             distances.append(dist)
@@ -91,10 +90,18 @@ if __name__ == "__main__":
     with open("output.csv", "w") as f:
         writer = csv.writer(f)
         with open("smooth.csv", "r") as g:
-            next(g)
             reader = csv.reader(g)
+            row1 = next(reader)
+            assert(int(row1[0]*100) == args.delta_times_100)
             for i, row in enumerate(reader):
-                question, center = row[0], row[1]
+                question, center= row[0], row[1]
+                with open(f"question"+str(i)+"_3", 'r') as third_s:
+                    reader = csv.reader(third_s)
+                    row1 = next(reader)
+                    assert(row1[0] == args.alpha)
+                    assert(row1[1] == args.quantile)
+                    assert(row1[2] == args.k)
+                    third_s.close()
                 radius = fin_certify("question"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
                             args.alpha, args.delta_times_100, args.search_exponent, args.alpha_2, args.quartile)
                 writer.writerow([question, center, radius])

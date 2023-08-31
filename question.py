@@ -135,12 +135,7 @@ class PerturbedQuestion(Question):
 
 if __name__ == "__main__":
     from common import dataset
-    import nltk
-    nltk.download("wordnet")
-    nltk.download('omw-1.4')
-
-    from nltk.corpus import wordnet as wn
-
+    
     logger = logging.getLogger("__smooth__")
     logger.setLevel(logging.DEBUG)
     for i, row in enumerate(dataset):

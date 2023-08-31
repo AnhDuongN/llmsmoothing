@@ -10,10 +10,9 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-a", "--alpha", help="probability for a word not to be substituted in smoothing distribution",type=float, default=0.75)
     parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset, indexed from 0",type=int, default = 10)
     parser.add_argument("-N", "--smoothing_number", help="number of smoothed inputs to take",type=int, default=100)
-    parser.add_argument("-m", "--quartile", help="q-th quartile to take to estimate the enclosing ball with probability \
+    parser.add_argument("-m", "--quantile", help="q-th quartile to take to estimate the enclosing ball with probability \
                         1- alpha_2 : see equation 8",type=int, default=100)
     parser.add_argument("-k", "--top_k", help="number of synonyms to be considered for smoothing",type=int, default=10)
-    parser.add_argument("-i", "--import_models", help="do import models", action="store_true")
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
@@ -30,7 +29,7 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
     - alpha            : Probability of not changing the original word when smoothing
     - filename         : output file name
     """
-    with open(filename, "w") as f:
+    with open(filename, "a") as f:
         torch.cuda.empty_cache() 
         writer = csv.writer(f)
         writer.writerow(["question", "answer"])
@@ -109,7 +108,7 @@ if __name__ == "__main__":
 
     logger.debug(f"Alpha : {alpha}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
 
-    if args.import_models:
+    if True:
         from common import dataset, t5_tok, t5_qa_model, model
         from question import Question
 
@@ -131,12 +130,26 @@ if __name__ == "__main__":
 
         # first N sample for smooth algorithm
         first_sample_name = frag_filename + "_1"
+        with open(first_sample_name, "w") as first_sample:
+            writer = csv.writer(first_sample)
+            writer.writerow([args.N])
+            first_sample.close()
         sample(current_question, N, k, alpha, first_sample_name)  
+
         # second N sample for smooth algorithm
         second_sample_name = frag_filename + "_2"
+        with open(second_sample_name, "w") as second_sample:
+            writer = csv.writer(second_sample)
+            writer.writerow([args.N])
+            second_sample.close()
         sample(current_question, N, k, alpha, second_sample_name) 
+
         # first m sample for certify algorithm
         third_sample_name = frag_filename + "_3"
+        with open(third_sample_name, "w") as third_sample:
+            writer = csv.writer(third_sample)
+            writer.writerow([args.alpha, args.quantile, args.top_k])
+            third_sample.close()
         sample(current_question, m, k, alpha, third_sample_name)  
     
 
