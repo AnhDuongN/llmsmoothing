@@ -93,7 +93,7 @@ if __name__ == "__main__":
     alpha = args.alpha
     N = args.smoothing_number
     k = args.top_k
-    m = args.quartile
+    m = args.quantile
     
     logger = logging.getLogger("__prompt__")
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
         first_sample_name = frag_filename + "_1"
         with open(first_sample_name, "w") as first_sample:
             writer = csv.writer(first_sample)
-            writer.writerow([args.N])
+            writer.writerow([args.smoothing_number])
             first_sample.close()
         sample(current_question, N, k, alpha, first_sample_name)  
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         second_sample_name = frag_filename + "_2"
         with open(second_sample_name, "w") as second_sample:
             writer = csv.writer(second_sample)
-            writer.writerow([args.N])
+            writer.writerow([args.smoothing_number])
             second_sample.close()
         sample(current_question, N, k, alpha, second_sample_name) 
 

@@ -42,7 +42,7 @@ def computeMEB(filename : str) -> tuple[str, float]:
 
     data = pd.read_csv(filename, header=None, names=['question', 'answer'], skiprows=0)
     answers = data['answer'].tolist() 
-
+    print(answers)
     # Allocating the space is slightly faster than appending
     medians = [None]*len(answers)   # Median distance from the answer to all other answers
     max_radii = [None]*len(answers) # Max distance from the answer to all other answers
@@ -113,20 +113,20 @@ if __name__ == "__main__":
         for i, row in enumerate(dataset):
             if (i >num_lines):
                 break
-            frag_filename = "question"+str(i)
+            frag_filename = "question_prompt"+str(i)
             first_sample_name = frag_filename + "_1"
             second_sample_name = frag_filename + "_2"
 
             with open(first_sample_name, 'r') as first_s:
                 reader = csv.reader(first_s)
                 row1 = next(reader)
-                assert(row1[0] == args.N)
+                assert(eval(row1[0]) == args.N)
                 first_s.close()
 
             with open(second_sample_name, 'r') as sec_s:
                 reader = csv.reader(sec_s)
                 row1 = next(reader)
-                assert(row1[0] == args.N)
+                assert(eval(row1[0]) == args.N)
                 sec_s.close()
                 
             writer.writerow([row['question'], smooth(args.delta, delta_1, first_sample_name, second_sample_name)])

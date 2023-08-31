@@ -90,10 +90,13 @@ if __name__ == "__main__":
     with open("output.csv", "w") as f:
         writer = csv.writer(f)
         with open("smooth.csv", "r") as g:
-            reader = csv.reader(g)
-            row1 = next(reader)
+            reader_smooth = csv.reader(g)
+            row1 = next(reader_smooth)
             assert(int(row1[0]*100) == args.delta_times_100)
             for i, row in enumerate(reader):
+                if i == 0:
+                    continue
+
                 question, center= row[0], row[1]
                 with open(f"question"+str(i)+"_3", 'r') as third_s:
                     reader = csv.reader(third_s)
