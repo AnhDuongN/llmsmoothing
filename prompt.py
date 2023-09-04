@@ -95,7 +95,7 @@ if __name__ == "__main__":
     alpha = args.alpha
     N = args.smoothing_number
     k = args.top_k
-    m = args.quartile
+    m = args.quantile
     
     logger = logging.getLogger("__prompt__")
 
