@@ -103,13 +103,15 @@ if __name__ == "__main__":
 
     with open("output_certify.csv", "w") as f:
         writer = csv.writer(f)
+        writer.writerow(["question", "center_answer", "ball_radius", "certified_radius", "probability"])
+
         with open("smooth.csv", "r") as g:
             reader_smooth = csv.reader(g)
             row1 = next(reader_smooth)
             for i, row in enumerate(reader_smooth):
                 question, center= row[0], row[1]
                 radius = fin_certify("question"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
-                            args.alpha, args.delta_times_100, args.search_exponent, args.alpha_2, args.quartile)
-                writer.writerow([question, center, radius])
+                            args.alpha, args.delta_times_100, args.search_exponent, args.alpha_2, args.quantile)
+                writer.writerow([question, center, radius, args.radius, str(args.alpha_2)+"+ alpha_1 from before"])
             g.close()
         f.close()

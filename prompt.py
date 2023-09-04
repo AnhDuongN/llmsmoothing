@@ -140,7 +140,7 @@ if __name__ == "__main__":
         third_sample_name = frag_filename + "_3"
         sample(current_question, m, k, alpha, third_sample_name)
 
-        config = {"alpha": args.alpha, "N": args.smoothing_number, "k" : args.top_k, "m" : args.quartile}
+        config = {"alpha": args.alpha, "N": args.smoothing_number, "k" : args.top_k, "m" : args.quantile}
 
         with open('config_prompt.json', 'w') as f:
             json.dump(config, f)
