@@ -4,6 +4,7 @@ import numpy as np
 import csv
 import argparse
 import logging
+import json
 
 
 def create_arg_parse() -> argparse.ArgumentParser:
@@ -87,21 +88,26 @@ if __name__ == "__main__":
 
     if args.import_models:
         from common import compute_wmd
+
+    with open('config_prompt.json', 'r') as f:
+        config = json.load(f)
+        assert(config["alpha"] == args.alpha), "prompt.py was executed with a different value for alpha"
+        assert(config["m"] == args.quantile), "prompt.py was executed with a different value for m"
+        assert(config["k"] == args.k), "prompt.py was executed with a different value for k"
+        f.close()
+    
+    with open('config_smooth.json', 'r') as f:
+        config = json.load(f)
+        assert(int(eval(config["delta"])*100) == args.delta_times_100), "smooth.py was executed with a different value for delta"
+        f.close()
+
     with open("output.csv", "w") as f:
         writer = csv.writer(f)
         with open("smooth.csv", "r") as g:
-            reader = csv.reader(g)
-            row1 = next(reader)
-            assert(int(row1[0]*100) == args.delta_times_100)
-            for i, row in enumerate(reader):
+            reader_smooth = csv.reader(g)
+            row1 = next(reader_smooth)
+            for i, row in enumerate(reader_smooth):
                 question, center= row[0], row[1]
-                with open(f"question"+str(i)+"_3", 'r') as third_s:
-                    reader = csv.reader(third_s)
-                    row1 = next(reader)
-                    assert(row1[0] == args.alpha)
-                    assert(row1[1] == args.quantile)
-                    assert(row1[2] == args.k)
-                    third_s.close()
                 radius = fin_certify("question"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
                             args.alpha, args.delta_times_100, args.search_exponent, args.alpha_2, args.quartile)
                 writer.writerow([question, center, radius])

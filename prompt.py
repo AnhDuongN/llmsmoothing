@@ -4,6 +4,8 @@ import csv
 import argparse
 import tqdm
 import torch
+import json
+
 
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -106,8 +108,6 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
-    logger.debug(f"Alpha : {alpha}, N : {N}, top_k : {k}, m : {m}, verbose : {args.verbose}") 
-
     if True:
         from common import dataset, t5_tok, t5_qa_model, model
         from question import Question
@@ -130,26 +130,18 @@ if __name__ == "__main__":
 
         # first N sample for smooth algorithm
         first_sample_name = frag_filename + "_1"
-        with open(first_sample_name, "w") as first_sample:
-            writer = csv.writer(first_sample)
-            writer.writerow([args.N])
-            first_sample.close()
         sample(current_question, N, k, alpha, first_sample_name)  
 
         # second N sample for smooth algorithm
         second_sample_name = frag_filename + "_2"
-        with open(second_sample_name, "w") as second_sample:
-            writer = csv.writer(second_sample)
-            writer.writerow([args.N])
-            second_sample.close()
         sample(current_question, N, k, alpha, second_sample_name) 
 
         # first m sample for certify algorithm
         third_sample_name = frag_filename + "_3"
-        with open(third_sample_name, "w") as third_sample:
-            writer = csv.writer(third_sample)
-            writer.writerow([args.alpha, args.quantile, args.top_k])
-            third_sample.close()
-        sample(current_question, m, k, alpha, third_sample_name)  
-    
+        sample(current_question, m, k, alpha, third_sample_name)
 
+        config = {"alpha": args.alpha, "N": args.smoothing_number, "k" : args.top_k, "m" : args.quartile}
+
+        with open('config_prompt.json', 'w') as f:
+            json.dump(config, f)
+            f.close()

@@ -6,8 +6,7 @@ import logging
 import numpy as np
 import csv
 from datasets import load_dataset
-
-
+import json
 
 def smooth(delta : float, delta_1 : float, file_1 : str, file_2 : str) -> str:
     """
@@ -40,7 +39,7 @@ def computeMEB(filename : str) -> tuple[str, float]:
     """
     logger.warning("Computing MEB : O(n^2) step")
 
-    data = pd.read_csv(filename, header=None, names=['question', 'answer'], skiprows=0)
+    data = pd.read_csv(filename)
     answers = data['answer'].tolist() 
 
     # Allocating the space is slightly faster than appending
@@ -69,7 +68,7 @@ def compute_p(filename : str, center : str, radius : float) -> float:
     - radius   : radius of the MEB of the first sampling
     Returns : Proportion of points of the 2nd sampling that fall into the MEB of the 1st sampling
     """
-    data = pd.read_csv(filename, header=None, names=['question', 'answer'], skiprows=0)
+    data = pd.read_csv(filename)
     answers = data['answer'].tolist()
 
     count = 0
@@ -106,29 +105,27 @@ if __name__ == "__main__":
         num_lines = len(dataset)
 
     logger.debug("Reached generation loop")
+
+    with open('config_prompt.json', 'r') as f:
+        config = json.load(f)
+        assert(config["N"] == args.N), "prompt.py was executed with a different value for the smoothing_number"
+        f.close()
+
+    with open('config_smooth.json', 'w') as g:
+        config = {"delta": args.delta}
+        json.dump(config,g)
+        g.close()
     
     with open("smooth.csv", "w") as f:
         writer = csv.writer(f)
-        writer.writerow([args.delta])
         for i, row in enumerate(dataset):
             if (i >num_lines):
                 break
             frag_filename = "question"+str(i)
             first_sample_name = frag_filename + "_1"
             second_sample_name = frag_filename + "_2"
-
-            with open(first_sample_name, 'r') as first_s:
-                reader = csv.reader(first_s)
-                row1 = next(reader)
-                assert(row1[0] == args.N)
-                first_s.close()
-
-            with open(second_sample_name, 'r') as sec_s:
-                reader = csv.reader(sec_s)
-                row1 = next(reader)
-                assert(row1[0] == args.N)
-                sec_s.close()
                 
             writer.writerow([row['question'], smooth(args.delta, delta_1, first_sample_name, second_sample_name)])
         f.close()
     
+
