@@ -1,16 +1,14 @@
-import csv
 from common import dataset
-
+import pandas as pd
 
 if __name__ == "__main__":
+    """
+    Exact matching to see if the ball centers correspond to the original answer(s) 
+    from the dataset.
+    """
     list_answers = []
-    with open("output.csv", "r") as f:
-        reader = csv.reader(f)
-        for i, line in enumerate(reader):
-            norm = dataset[i]
-            inferred_answer = line[2]
-            if (inferred_answer in norm):
-                list_answers.append(True)
-
-    for i, row in enumerate(dataset):
-        normalised_answers = row['answer']['normalized_aliases']
+    df = pd.read_csv("output.csv")
+    df['normalized_answer'] = dataset['normalized_answer']
+    df['entail'] = df.apply(lambda x: x['answer'] in x['normalized_answer'], axis=1)
+    df.to_csv('entailment.csv')  
+    

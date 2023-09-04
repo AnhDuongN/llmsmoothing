@@ -101,7 +101,7 @@ if __name__ == "__main__":
         assert(int(eval(config["delta"])*100) == args.delta_times_100), "smooth.py was executed with a different value for delta"
         f.close()
 
-    with open("output.csv", "w") as f:
+    with open("output_certify.csv", "w") as f:
         writer = csv.writer(f)
         with open("smooth.csv", "r") as g:
             reader_smooth = csv.reader(g)

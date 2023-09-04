@@ -95,6 +95,8 @@ def _compute_wmd(document1 : str, document2 : str) -> float:
     - document1 : first sentence
     - document2 : second sentence
     Returns : Word mover's distance between the 1st and 2nd sentences.
+    !!! Disclaimer !!!
+    This code copied from Gensim.WMD (with slight adaptations to use SentencePiece)
     """
     # TODO : test this on GPU
     document1, encodings1 = encode(document1)
