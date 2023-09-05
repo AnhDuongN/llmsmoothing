@@ -31,6 +31,7 @@ def certify(filename : str, center : str) -> list[float]:
     """
     data = pd.read_csv(filename)
     answers = data['answer'].tolist()
+    logger.debug("Certifying radius")
     distances = []
     for _, answer in enumerate(answers):
         dist = compute_wmd(center, answer)
@@ -86,9 +87,6 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)
 
-    if args.import_models:
-        from common import compute_wmd
-
     with open('config_prompt.json', 'r') as f:
         config = json.load(f)
         assert(config["alpha"] == args.alpha), "prompt.py was executed with a different value for alpha"
@@ -98,8 +96,12 @@ if __name__ == "__main__":
     
     with open('config_smooth.json', 'r') as f:
         config = json.load(f)
-        assert(int(eval(config["delta"])*100) == args.delta_times_100), "smooth.py was executed with a different value for delta"
+        assert(int(config["delta"]*100) == args.delta_times_100), "smooth.py was executed with a different value for delta"
         f.close()
+
+    if True:
+        from common import compute_wmd
+
 
     with open("output_certify.csv", "w") as f:
         writer = csv.writer(f)
