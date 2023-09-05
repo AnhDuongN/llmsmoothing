@@ -1,5 +1,8 @@
 from common import dataset
 import pandas as pd
+import csv
+import unicodedata as ud
+import regex as re
 
 if __name__ == "__main__":
     """
@@ -7,8 +10,13 @@ if __name__ == "__main__":
     from the dataset.
     """
     list_answers = []
-    df = pd.read_csv("output.csv")
-    df['normalized_answer'] = dataset['normalized_answer']
-    df['entail'] = df.apply(lambda x: x['answer'] in x['normalized_answer'], axis=1)
-    df.to_csv('entailment.csv')  
-    
+    with open("output_certify.csv", "r") as f:
+        reader = csv.reader(f)
+        for i, (row, answer) in enumerate(zip(reader, dataset)):
+            if re.sub(r'[^A-Za-z0-9 ]+', '',row[1]).lower() in answer['normalized_aliases']:
+                list_answers.append(True)
+            else:
+                list_answers.append(False)
+    df = pd.read_csv("output_certify.csv")
+    df['entailement'] = list_answers
+    df.to_csv("entailment.csv")

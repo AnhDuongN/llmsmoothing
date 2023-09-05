@@ -112,7 +112,7 @@ if __name__ == "__main__":
             row1 = next(reader_smooth)
             for i, row in enumerate(reader_smooth):
                 question, center= row[0], row[1]
-                radius = fin_certify("question"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
+                radius = fin_certify("question_prompt"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
                             args.alpha, args.delta_times_100, args.search_exponent, args.alpha_2, args.quantile)
                 writer.writerow([question, center, radius, args.radius, str(args.alpha_2)+"+ alpha_1 from before"])
             g.close()
