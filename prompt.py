@@ -102,7 +102,7 @@ if __name__ == "__main__":
         from question import Question
 
     if args.num_lines : 
-        num_lines = args.num_lines -1
+        num_lines = args.num_lines-1
     else:
         num_lines = len(dataset)
     ### Prompt
