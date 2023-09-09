@@ -23,7 +23,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
 
 def certify(filename : str, center : str) -> list[float]:
     """
-    Computes the distances betweeb the center and each answer in <filename>
+    Computes the distances between the center and each answer in <filename>
     Parameters : 
     - filename : dataset containing the answers from the sampling for certify algorithm (Algorithm 3)
     - center   : center of the MEB computed in smooth.py

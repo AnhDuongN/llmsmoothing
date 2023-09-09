@@ -1,4 +1,3 @@
-# from common import dataset
 import pandas as pd
 import csv
 import unicodedata as ud
@@ -16,6 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="count", default=0)
     logger = logging.getLogger("__entailment__")
     args = parser.parse_args()
+
     if not args.verbose:
         logger.setLevel(logging.ERROR)
     elif args.verbose == 1:
@@ -24,6 +24,7 @@ if __name__ == "__main__":
         logger.setLevel(logging.INFO)
     else:
         logger.setLevel(logging.DEBUG)
+
     dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
     list_answers = []
     with open("output_certify.csv", "r") as f:
@@ -36,7 +37,9 @@ if __name__ == "__main__":
             else:
                 list_answers.append(False)
     df = pd.read_csv("output_certify.csv")
+
     logger.debug(df.head())
     logger.debug(list_answers)
+
     df['entailement'] = list_answers
     df.to_csv("entailment.csv")

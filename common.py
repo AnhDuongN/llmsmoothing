@@ -137,3 +137,18 @@ def _compute_wmd(document1 : str, document2 : str) -> float:
 
     # Compute WMD.
     return emd(d1, d2, distance_matrix)
+
+#####################
+
+def verify_vocab_in_w2v(answer : str) -> bool:
+    """
+    Verifies if at least one word in the answer is in the vocabulary of the Word2Vec model
+    so that Word Mover's Distance can be computed.
+    Parameters : answer : the answer to verify
+    Returns    : True if at least one word is in the vocabulary, otherwise False
+    """
+    answer = answer.split()
+    for word in answer:
+        if word in model.key_to_index:
+            return True
+    return False

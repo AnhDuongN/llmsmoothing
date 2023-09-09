@@ -32,7 +32,9 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
     - filename         : output file name
     """
     with open(filename, "a") as f:
+
         torch.cuda.empty_cache() 
+        from common import t5_tok, t5_qa_model, verify_vocab_in_w2v
         writer = csv.writer(f)
         writer.writerow(["question", "answer"])
         smooth_prompts = current_question.generate_smooth_N_questions(N, top, alpha)
@@ -69,19 +71,6 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
             writer.writerow([smooth_prompt, smooth_answer])
         f.close()
 
-def verify_vocab_in_w2v(answer : str) -> bool:
-    """
-    Verifies if at least one word in the answer is in the vocabulary of the Word2Vec model
-    so that Word Mover's Distance can be computed.
-    Parameters : answer : the answer to verify
-    Returns    : True if at least one word is in the vocabulary, otherwise False
-    """
-    answer = answer.split()
-    for word in answer:
-        if word in model.key_to_index:
-            return True
-    return False
-
 if __name__ == "__main__":
     """
     Samples Z = {z_i} such that z_i follows a distribution f(\phi (x)) three times, twice for "smooth" step and once for "certify" step.
@@ -109,7 +98,7 @@ if __name__ == "__main__":
         logger.setLevel(logging.DEBUG)
 
     if True:
-        from common import dataset, t5_tok, t5_qa_model, model
+        from common import dataset
         from question import Question
 
     if args.num_lines : 
