@@ -1,14 +1,17 @@
-from common import dataset
+# from common import dataset
 import pandas as pd
 import csv
 import unicodedata as ud
 import regex as re
+from datasets import load_dataset
 
 if __name__ == "__main__":
     """
     Exact matching to see if the ball centers correspond to the original answer(s) 
     from the dataset.
     """
+
+    dataset = load_dataset("trivia_qa", "rc.nocontext", split="validation")
     list_answers = []
     with open("output_certify.csv", "r") as f:
         reader = csv.reader(f)
