@@ -25,7 +25,7 @@ def create_arg_parse() -> argparse.ArgumentParser:
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
-def certify(filename : str, center : str) -> list[float]:
+def certify(question_index, filename : str, center : str) -> list[float]:
     """
     Computes the distances between the center and each answer in <filename>
     Parameters : 
@@ -37,15 +37,18 @@ def certify(filename : str, center : str) -> list[float]:
     answers = data['answer'].tolist()
     logger.debug("Certifying radius")
     distances = []
-    for _, answer in enumerate(answers):
-        dist = compute_wmd(center, answer)
-        if dist != float('inf'):
-            distances.append(dist)
-        else:
-            logger.debug("Inf distance!")
-    return distances
+    with open(f"log_{question_index}.csv", "w") as f : 
+        writer = csv.writer(f)
+        for _, answer in enumerate(answers):
+            dist = compute_wmd(center, answer)
+            writer.writerow([answer, dist])
+            if dist != float('inf'):
+                distances.append(dist)
+            else:
+                logger.debug("Inf distance!")
+        return distances
 
-def fin_certify(filename : str, center : str,  r : int, d : int, k : int, alpha : float, 
+def fin_certify(question_index : int, filename : str, center : str,  r : int, d : int, k : int, alpha : float, 
                 delta_times_100 : int, search_exponent : int, alpha_2 : float, m : int) -> float:
     """
     Implementation of algorithm 3 in article. Returns the radius of the ball centered on center 
@@ -70,7 +73,7 @@ def fin_certify(filename : str, center : str,  r : int, d : int, k : int, alpha 
     normalized_p = compute_rho.compute_rho_normalized(r, d, k, alpha, delta_times_100)
     p = compute_rho.return_to_base(normalized_p, search_exponent, k, d)
 
-    radii = certify(filename, center)
+    radii = certify(question_index, filename, center)
 
     q = p + np.sqrt(np.log(1/alpha_2)/(2*m))
     logger.debug(f"p : {p}, q : {q}")
@@ -113,7 +116,7 @@ if __name__ == "__main__":
             row1 = next(reader_smooth)
             for i, row in enumerate(reader_smooth):
                 question, center= row[0], row[1]
-                radius = fin_certify("question_prompt"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
+                radius = fin_certify(i, "question_prompt"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
                             args.alpha, args.delta_times_100, args.search_exponent, args.alpha_2, args.quantile)
                 writer.writerow([question, center, radius, args.radius, str(1-args.alpha_2-alpha_1)])
             g.close()

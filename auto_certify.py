@@ -39,7 +39,7 @@ if __name__ == "__main__":
             for i, row in enumerate(reader_smooth):
                 question, center= row[0], row[1]
                 params = auto_params(question, radius)
-                radius = fin_certify("question_prompt"+str(i)+"_3", center, radius, len(question.split()), params["k"], 
+                radius = fin_certify(i, "question_prompt"+str(i)+"_3", center, radius, len(question.split()), params["k"], 
                             params["alpha"], int(params["delta"]*100), search_exponent, params["alpha_2"], params["m"])
                 writer.writerow([question, center, radius, args.radius, str(1-params["alpha_2"]-params["alpha_1"])])
             g.close()
