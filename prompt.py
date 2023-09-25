@@ -5,7 +5,8 @@ import argparse
 import tqdm
 import torch
 import json
-
+from common import dataset
+from question import Question
 
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -95,11 +96,7 @@ if __name__ == "__main__":
     elif args.verbose == 2:
         logger.setLevel(logging.INFO)
     else:
-        logger.setLevel(logging.DEBUG)
-
-    if True:
-        from common import dataset
-        from question import Question
+        logger.setLevel(logging.DEBUG)        
 
     if args.num_lines : 
         num_lines = args.num_lines-1

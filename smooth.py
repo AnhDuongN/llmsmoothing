@@ -1,11 +1,10 @@
 import pandas as pd
 import argparse
-
+from common import dataset, compute_wmd
 import statistics
 import logging
 import numpy as np
 import csv
-from datasets import load_dataset
 import json
 
 def smooth(delta : float, delta_1 : float, file_1 : str, file_2 : str) -> str:
@@ -96,9 +95,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     delta_1 = 2*np.exp(-2*args.N*(args.alpha_1**2)) #see theorem 3
-
-    if True:
-        from common import dataset, compute_wmd
+        
     if args.num_lines : 
         num_lines = args.num_lines -1
     else:
@@ -112,7 +109,7 @@ if __name__ == "__main__":
         f.close()
 
     with open('config_smooth.json', 'w') as g:
-        config = {"delta": args.delta}
+        config = {"delta": args.delta, "alpha_1" : args.alpha_1}
         json.dump(config,g)
         g.close()
     

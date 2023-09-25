@@ -5,19 +5,23 @@ import csv
 import argparse
 import logging
 import json
+from common import compute_wmd
 
 
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--radius", help="number of perturbations",type=int, default = 3)
     parser.add_argument("-k", "--k", help="number of synonyms to be considered for smoothing", type = int, default = 10) 
     parser.add_argument("-a", "--alpha", help="probability for a word not to be substituted in smoothing distribution",type=float, default=0.75)
-    parser.add_argument("-D", "--delta_times_100", help="delta such that the fall of center hat(f) encloses 1/2 + delta probability \
-                        mass of the smoothed f(x) TIMES 100", type=int, default=5)
-    parser.add_argument("-c", "--search_exponent", help="search exponent for binary search",type=int, default = 30)
-    parser.add_argument("-A", "--alpha_2", help="alpha_2 s.t. with probability 1-alpha_2, P(f(phi(X)) in MEB) > p",type=float, default=0.05)
     parser.add_argument("-m", "--quantile", help="number of samples to take q-th quartile to take to estimate the enclosing ball with probability 1- alpha_2 : see equation 8", \
                         type = int, default = 100) 
+    parser.add_argument("-D", "--delta_times_100", help="delta such that the fall of center hat(f) encloses 1/2 + delta probability \
+                        mass of the smoothed f(x) TIMES 100", type=int, default=5)
+    
+    parser.add_argument("-r", "--radius", help="number of perturbations",type=int, default = 3)
+
+    parser.add_argument("-c", "--search_exponent", help="search exponent for binary search",type=int, default = 30)
+    parser.add_argument("-A", "--alpha_2", help="alpha_2 s.t. with probability 1-alpha_2, P(f(phi(X)) in MEB) > p",type=float, default=0.05)
+
     parser.add_argument("-v", "--verbose", action="count", default=0)
     return parser
 
@@ -97,11 +101,8 @@ if __name__ == "__main__":
     with open('config_smooth.json', 'r') as f:
         config = json.load(f)
         assert(int(config["delta"]*100) == args.delta_times_100), "smooth.py was executed with a different value for delta"
+        alpha_1 = config["alpha_1"]
         f.close()
-
-    if True:
-        from common import compute_wmd
-
 
     with open("output_certify.csv", "w") as f:
         writer = csv.writer(f)
@@ -114,6 +115,6 @@ if __name__ == "__main__":
                 question, center= row[0], row[1]
                 radius = fin_certify("question_prompt"+str(i)+"_3", center, args.radius, len(question.split()), args.k, 
                             args.alpha, args.delta_times_100, args.search_exponent, args.alpha_2, args.quantile)
-                writer.writerow([question, center, radius, args.radius, str(args.alpha_2)+"+ alpha_1 from before"])
+                writer.writerow([question, center, radius, args.radius, str(1-args.alpha_2-alpha_1)])
             g.close()
         f.close()
