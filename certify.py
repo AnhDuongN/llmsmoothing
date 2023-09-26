@@ -35,7 +35,7 @@ def certify(question_index, filename : str, center : str) -> list[float]:
     """
     data = pd.read_csv(filename)
     answers = data['answer'].tolist()
-    logger.debug("Certifying radius")
+   # logger.debug("Certifying radius")
     distances = []
     with open(f"log_{question_index}.csv", "w") as f : 
         writer = csv.writer(f)
@@ -44,9 +44,10 @@ def certify(question_index, filename : str, center : str) -> list[float]:
             writer.writerow([answer, dist])
             if dist != float('inf'):
                 distances.append(dist)
-            else:
-                logger.debug("Inf distance!")
-        return distances
+   #         else:
+   #             logger.debug("Inf distance!")
+        f.close()
+    return distances
 
 def fin_certify(question_index : int, filename : str, center : str,  r : int, d : int, k : int, alpha : float, 
                 delta_times_100 : int, search_exponent : int, alpha_2 : float, m : int) -> float:
@@ -76,8 +77,8 @@ def fin_certify(question_index : int, filename : str, center : str,  r : int, d 
     radii = certify(question_index, filename, center)
 
     q = p + np.sqrt(np.log(1/alpha_2)/(2*m))
-    logger.debug(f"p : {p}, q : {q}")
-    logger.debug(f"radii : {radii}")
+   # logger.debug(f"p : {p}, q : {q}")
+   # logger.debug(f"radii : {radii}")
     return (1+beta)*np.quantile(radii, q)
 
 if __name__ == "__main__":

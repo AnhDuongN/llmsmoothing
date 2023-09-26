@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     ### Prompt
     logger.debug("Reached generation loop")
-    radius = 3
+    radius = 1
 
     for i, row in enumerate(dataset):
         skip = False
@@ -64,4 +64,4 @@ if __name__ == "__main__":
 
         # first m sample for certify algorithm
         third_sample_name = frag_filename + "_3"
-        sample(current_question, params["N"], params["k"], params["alpha"], third_sample_name)
+        sample(current_question, params["m"], params["k"], params["alpha"], third_sample_name)

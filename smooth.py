@@ -18,12 +18,12 @@ def smooth(delta : float, delta_1 : float, file_1 : str, file_2 : str) -> str:
     Returns : Center of the Minimum Enclosing Ball
     """
     center, radius = computeMEB(file_1)
-    logger.debug(f"MEB : Center : {center}, Radius : {radius}")
+   # logger.debug(f"MEB : Center : {center}, Radius : {radius}")
     rho = compute_p(file_2, center, radius)
-    logger.debug(f"p : {rho}")
+   # logger.debug(f"p : {rho}")
     p_delta_1 = rho - delta_1
     delta_2 = 0.5 - p_delta_1
-    logger.debug(f"delta_1 : {delta_1}, delta_2 : {delta_2}, delta : {delta}")
+   # logger.debug(f"delta_1 : {delta_1}, delta_2 : {delta_2}, delta : {delta}")
     if max(delta_1, delta_2) <= delta:
         return center
     else : 
@@ -36,11 +36,11 @@ def computeMEB(filename : str) -> tuple[str, float]:
     - filename : File with the samples from the first sampling
     Returns : Center of the minimum enclosing ball and estimated first radius of the minimum enclosing ball
     """
-    logger.warning("Computing MEB : O(n^2) step")
+    #logger.warning("Computing MEB : O(n^2) step")
 
     data = pd.read_csv(filename)
     answers = data['answer'].tolist() 
-    print(answers)
+   # print(answers)
     # Allocating the space is slightly faster than appending
     medians = [None]*len(answers)   # Median distance from the answer to all other answers
     max_radii = [None]*len(answers) # Max distance from the answer to all other answers
@@ -50,7 +50,7 @@ def computeMEB(filename : str) -> tuple[str, float]:
         temp_array = [None]*len(answers)
         for j in range(len(answers)):
             temp_array[j] = compute_wmd(answers[i], answers[j])
-            logger.debug(f"Distance : {temp_array[j]}")
+     #       logger.debug(f"Distance : {temp_array[j]}")
         medians[i] = statistics.median(temp_array)
         max_radii[i] = max(temp_array)
 

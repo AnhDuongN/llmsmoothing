@@ -27,8 +27,10 @@ if __name__ == "__main__":
     
     with open("smooth.csv", "w") as f:
         writer = csv.writer(f)
+        writer.writerow(["question", "center"])
         for i, row in enumerate(dataset):
-
+            if i >= 10:
+                break
             frag_filename = "question_prompt"+str(i)
             first_sample_name = frag_filename + "_1"
             second_sample_name = frag_filename + "_2"

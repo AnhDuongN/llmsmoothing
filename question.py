@@ -40,7 +40,7 @@ class Question:
         - top : number of synonyms to be generated for each word
         Returns : Dictionary indexed as <word, list of synonyms>
         """
-        logger.debug(f"Generate synonyms for {self.question}")
+        # logger.debug(f"Generate synonyms for {self.question}")
         smoothing_dict = defaultdict(list)
         for i, word in enumerate(self.questionWords):
             if i == len(self.questionWords) - 1 : 
@@ -128,7 +128,7 @@ class Question:
         turns = 0
         while True: 
             if turns == max_turns:
-                logging.info(f"Generation of perturbations exceded {max_turns} rolls")
+                # logging.info(f"Generation of perturbations exceded {max_turns} rolls")
                 return [], []
             perturbedIndex = sample(range(0, len(self.questionWords)), radius)
             replaceIndex = [None]*radius

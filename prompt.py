@@ -50,7 +50,8 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
             # we need to roll a new question, so that we can compute Word Mover's Distance
 
             if not verify_vocab_in_w2v(smooth_answer):
-                logger.debug(f"Answer {smooth_answer} not in vocabulary of Word2Vec")
+                
+                # logger.debug(f"Answer {smooth_answer} not in vocabulary of Word2Vec")
                 # We re-roll a new question 10 times. If this fails, we go to the next smooth question
                 # N.B. Another option is actually just to continue and write nothing for this smooth question.
                 
@@ -64,7 +65,7 @@ def sample(current_question, N : int, top : int, alpha : float, filename : str):
                     smooth_answer = t5_tok.decode(gen_output, skip_special_tokens=True)
                     i+=1
                 if i == 10:
-                    logger.debug(f"Answer re-roll exceeded 10 rolls, refrain to put down answer")
+                    # logger.debug(f"Answer re-roll exceeded 10 rolls, refrain to put down answer")
                     continue
             del input_ids
             torch.cuda.empty_cache() 

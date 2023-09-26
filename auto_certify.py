@@ -17,7 +17,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger = logging.getLogger("__auto_certify__")
 
-    radius = 3
+    rad = 1
     search_exponent =50
 
     if not args.verbose:
@@ -38,9 +38,9 @@ if __name__ == "__main__":
             row1 = next(reader_smooth)
             for i, row in enumerate(reader_smooth):
                 question, center= row[0], row[1]
-                params = auto_params(question, radius)
-                radius = fin_certify(i, "question_prompt"+str(i)+"_3", center, radius, len(question.split()), params["k"], 
+                params = auto_params(question, rad)
+                radius = fin_certify(i, "question_prompt"+str(i)+"_3", center, params["radius"], len(question.split()), params["k"], 
                             params["alpha"], int(params["delta"]*100), search_exponent, params["alpha_2"], params["m"])
-                writer.writerow([question, center, radius, args.radius, str(1-params["alpha_2"]-params["alpha_1"])])
+                writer.writerow([question, center, radius, params["radius"],  str(1-params["alpha_2"]-params["alpha_1"])])
             g.close()
         f.close()
