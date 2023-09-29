@@ -17,7 +17,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger = logging.getLogger("__auto_certify__")
 
-    rad = 1
+    rad = 2
     search_exponent =50
 
     if not args.verbose:

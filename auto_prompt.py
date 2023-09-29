@@ -35,17 +35,12 @@ if __name__ == "__main__":
 
     ### Prompt
     logger.debug("Reached generation loop")
-    radius = 1
+    radius = 2
 
     for i, row in enumerate(dataset):
         skip = False
         if (i >= 10):
             break
-        for rad in range(3,6):
-            if (auto_params(row['question'], rad)["m"] == -1):
-                skip = True
-        if skip:
-            continue
         
         logger.debug(f"Current question : {row['question']}")
         frag_filename = "question_prompt"+str(i)
