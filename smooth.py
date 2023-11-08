@@ -85,8 +85,8 @@ if __name__ == "__main__":
     logger = logging.getLogger("__smooth__")
     logger.setLevel(logging.DEBUG)
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset",\
-                        type=int, default = 10)
+    parser.add_argument("-i", "--index", help="index of question in dataset",\
+                        type=int, default = 0)
     parser.add_argument("-D", "--delta", help="delta such that the fall of center hat(f) encloses 1/2 + delta probability \
                         mass of the smoothed f(x)",type=float, default = 0.01)
     parser.add_argument("-a", "--alpha_1", help="alpha_1, s.t. with probability 1-alpha_1, d(f(x) - f(bar(x)) < 2R) for all x-bar(x) leq r",
@@ -96,10 +96,7 @@ if __name__ == "__main__":
 
     delta_1 = 2*np.exp(-2*args.N*(args.alpha_1**2)) #see theorem 3
         
-    if args.num_lines : 
-        num_lines = args.num_lines -1
-    else:
-        num_lines = len(dataset)
+    i = args.index
 
     logger.debug("Reached generation loop")
 
@@ -115,14 +112,11 @@ if __name__ == "__main__":
     
     with open("smooth.csv", "w") as f:
         writer = csv.writer(f)
-        for i, row in enumerate(dataset):
-            if (i >num_lines):
-                break
-            frag_filename = "question_prompt"+str(i)
-            first_sample_name = frag_filename + "_1"
-            second_sample_name = frag_filename + "_2"
-                
-            writer.writerow([row['question'], smooth(args.delta, delta_1, first_sample_name, second_sample_name)])
+        frag_filename = "question_prompt"+str(i)
+        first_sample_name = frag_filename + "_1"
+        second_sample_name = frag_filename + "_2"
+            
+        writer.writerow([dataset[i][1]['question'], smooth(args.delta, delta_1, first_sample_name, second_sample_name)])
         f.close()
     
 

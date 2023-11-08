@@ -11,7 +11,7 @@ from question import Question
 def create_arg_parse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--alpha", help="probability for a word not to be substituted in smoothing distribution",type=float, default=0.75)
-    parser.add_argument("-n", "--num_lines", help="number of original questions to be taken from dataset, indexed from 0",type=int, default = 10)
+    parser.add_argument("-i", "--index", help="index of question in dataset, starting from 0", type=int, default=0)
     parser.add_argument("-N", "--smoothing_number", help="number of smoothed inputs to take",type=int, default=100)
     parser.add_argument("-m", "--quantile", help="q-th quartile to take to estimate the enclosing ball with probability \
                         1- alpha_2 : see equation 8",type=int, default=100)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     N = args.smoothing_number
     k = args.top_k
     m = args.quantile
-    
+    i = args.index
     logger = logging.getLogger("__prompt__")
 
     if not args.verbose:
@@ -99,36 +99,30 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.DEBUG)        
 
-    if args.num_lines : 
-        num_lines = args.num_lines-1
-    else:
-        num_lines = len(dataset)
     ### Prompt
     logger.debug("Reached generation loop")
+
+    logger.debug(f"Current question : {dataset[i][1]['question']}")
+    frag_filename = "question_prompt"+str(i)
+
+    current_question = Question(dataset[i][1]['question'], dataset[i][1]['answer']['normalized_aliases'], dataset[i][1]['question_id'])
+    current_question.generate_synonyms_albert(k)
+
+    # first N sample for smooth algorithm
+    first_sample_name = frag_filename + "_1"
+    sample(current_question, N, k, alpha, first_sample_name)  
+
+    # second N sample for smooth algorithm
+    second_sample_name = frag_filename + "_2"
+    sample(current_question, N, k, alpha, second_sample_name) 
+
+    # first m sample for certify algorithm
+    third_sample_name = frag_filename + "_3"
+    sample(current_question, m, k, alpha, third_sample_name)
+
+    config = {"alpha": args.alpha, "N": args.smoothing_number, "k" : args.top_k, "m" : args.quantile}
+
+    with open('config_prompt.json', 'w') as f:
+        json.dump(config, f)
+        f.close()
     
-    for i, row in enumerate(dataset):
-        if (i >num_lines):
-            break
-        logger.debug(f"Current question : {row['question']}")
-        frag_filename = "question_prompt"+str(i)
-
-        current_question = Question(row['question'], row['answer']['normalized_aliases'], row['question_id'])
-        current_question.generate_synonyms_albert(k)
-
-        # first N sample for smooth algorithm
-        first_sample_name = frag_filename + "_1"
-        sample(current_question, N, k, alpha, first_sample_name)  
-
-        # second N sample for smooth algorithm
-        second_sample_name = frag_filename + "_2"
-        sample(current_question, N, k, alpha, second_sample_name) 
-
-        # first m sample for certify algorithm
-        third_sample_name = frag_filename + "_3"
-        sample(current_question, m, k, alpha, third_sample_name)
-
-        config = {"alpha": args.alpha, "N": args.smoothing_number, "k" : args.top_k, "m" : args.quantile}
-
-        with open('config_prompt.json', 'w') as f:
-            json.dump(config, f)
-            f.close()
