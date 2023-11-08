@@ -1,4 +1,4 @@
-# llmsmoothing
+# Uncertainty estimation for Large Language Models
 The aim of this project is to estimate the uncertainty of Large Language Models. To achieve this, we aim to leverage the Adversary Robustness literature. 
 Intuitively, adversarial robustness is a method where an attacker rephrase (perturb) the query and prompt a language model multiple times. If the language model is certain about its answer, it shouldn’t change its answer significantly based on the rephrasings. Formally, robustness can be formulated as :
 
